@@ -1,77 +1,291 @@
+/*
+ * roBa keymap - moNa2 設計の移植版
+ *   JIS運用 / WIN・MAC分離 / DYA Studio 対応
+ *
+ * 元設計: pstzq/zmk-config-moNa2-v2 の config/mona2.keymap (docs/keymap-phase1.md)
+ *
+ * ── moNa2(42キー) から roBa(43キー) への移植メモ ──────────────────
+ * マトリクスはほぼ同一 (どちらも 11列×4行、右手が central)。
+ * 唯一の差は roBa の 1行目に RC(1,5)(左手内側・ホームポジション段) が
+ * 1個多いこと。したがって
+ *
+ *     moNa2 のキー位置 i  ->  roBa の (i < 15 ? i : i + 1)
+ *
+ * という単純なシフトで全キーが移る。追加された roBa 位置15 には
+ * moNa2 に対応キーが無いので、moNa2 でコンボ(S+D)に追いやられていた
+ * Tab をここへ置いた (コンボも従来どおり残してある)。
+ *
+ * 左手サムの CKW12 (クリック付きロータリーエンコーダ):
+ *   回転 = sensor-bindings (下の runtime-sensor-rotate behavior)
+ *   押下 = RC(3,5) = キー位置39。moNa2 の位置38 と同じ
+ *          `&lt NAV_* LANG2` (タップ=無変換 / ホールド=NAV層) になり、
+ *          本家 roBa の `&lt_to_layer_0 3 LANGUAGE_2` と同じ意味で移行できる。
+ */
+
+#include <input/processors.dtsi>
+#include <input/processors/runtime-input-processor.dtsi>
+#include <behaviors/runtime-sensor-rotate.dtsi>
+// DYA Studio で作ったマクロを &rmacro <slot> でキーに割り当てられるようにする
+#include <behaviors/runtime_macro.dtsi>
+#include <dt-bindings/zmk/input_transform.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include "jis.h"
+#include <dt-bindings/zmk/mouse-gesture.h>
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/outputs.h>
 #include <dt-bindings/zmk/pointing.h>
-#include <behaviors/runtime-sensor-rotate.dtsi>
+
+#define ZMK_POINTING_DEFAULT_SCRL_VAL 30
+
+/* mod-tap 誤爆対策 (&mt / mt_bspc):
+ * 直前のキー入力からこの時間(ms)以内は hold(修飾キー)が発動せず tap 扱いになる。
+ * 0 にすると無効化(従来挙動) */
+#define MT_REQUIRE_PRIOR_IDLE_MS 125
+
+/* ---- レイヤー定義 ---- */
+/* moNa2 と同じ番号を使う。overlay 側の input-processor チェーン
+ * (scroller/panner/gesturer/zip_temp_layer) がこの番号を直接参照するので、
+ * 並べ替えるときは boards/shields/roBa/roBa_R.overlay も同時に直すこと。 */
+
+#define MAC          0   // ベース(Mac)        — デフォルト
+#define WIN          1   // ベース(Windows)
+#define O24          2   // 代替アルファ（Q+Pトグル）
+#define SYM          3   // 記号
+#define NUM          4   // 数字(右手テンキー)
+#define NAV_MAC      5   // 矢印/ナビ(Mac)     — P=Cmd+Shift+3
+#define NAV_WIN      6   // 矢印/ナビ(Windows) — P=PrtSc
+#define MOUSE        7   // マウス(オートマウスレイヤー)
+#define BLE          8   // BT/設定
+#define GESTURE_PAN  9   // P長押し → 2D自由スクロール(パン)
+#define GESTURE_SNAP_MAC 10  // Q長押し(Mac) → ウィンドウスナップ(Rectangle)
+#define GESTURE_SNAP_WIN 11  // Q長押し(Win) → ウィンドウスナップ(Win+矢印)
+#define CURSOR       12  // (現在未使用)  長押し → トラックボールで矢印キー入力
+#define CLICK        13  // 長押し → クリック層（カーソル移動はそのまま、指でクリック）
 
 &mt {
     flavor = "balanced";
     quick-tap-ms = <0>;
+#if MT_REQUIRE_PRIOR_IDLE_MS > 0
+    require-prior-idle-ms = <MT_REQUIRE_PRIOR_IDLE_MS>;
+#endif
 };
 
-// NOTE: 旧構成にあった `&trackball { automouse-layer; scroll-layers; }` は削除した。
-// これらは kumamuk-git 版 PMW3610 ドライバ固有の devicetree プロパティで、
-// cormoran 版には存在しないため残すとビルドが落ちる。
-// 同じ機能は boards/shields/roBa/roBa_R.overlay の入力プロセッサへ移した:
-//   automouse-layer = <4> -> &zip_temp_layer 4 700
-//   scroll-layers   = <5> -> trackball_listener の scroller { layers = <5>; }
+&lt {
+    quick-tap-ms = <200>;
+    flavor = "balanced";
+};
 
 / {
-    combos {
-        compatible = "zmk,combos";
+    /* ---- コンボ (DYA Studio から編集可能) ----
+     *
+     * 旧 `combos { compatible = "zmk,combos"; }` はコンパイル時固定で DYA Studio
+     * から編集できないため、zmk-feature-runtime-combo の「コンパイル時デフォルト」
+     * ノードへ移行した。ここに書いた内容はフラッシュ直後から有効で、
+     * settings_reset をかけても復活する。
+     *
+     * 【重要】DYA Studio 側で編集するとそのスロットだけフラッシュ上で上書きされ、
+     * 以後 .keymap を書き換えても反映されない。ファーム側の値へ戻すには
+     * Web UI の "Reset to Default" か settings_reset.uf2 が必要。
+     *
+     * key-positions は moNa2 の値を「15以上なら+1」で移してある。
+     * スロット総数は CONFIG_ZMK_RUNTIME_COMBO_MAX_COMBOS (=16)。
+     * 未使用スロット 8〜15 は DYA Studio から自由に追加できる。
+     */
+    runtime_combo_defaults {
+        compatible = "cormoran,runtime-combo-defaults";
 
-        tab {
+        // S+D = Tab   (moNa2: 11 12 → 変化なし)
+        combo_tab {
+            slot = <0>;
+            display-name = "Tab";
             bindings = <&kp TAB>;
             key-positions = <11 12>;
+            layers = <WIN MAC>;
         };
 
-        shift_tab {
+        // D+F = Shift+Tab   (moNa2: 12 13 → 変化なし)
+        combo_stab {
+            slot = <1>;
+            display-name = "Shift+Tab";
             bindings = <&kp LS(TAB)>;
             key-positions = <12 13>;
+            layers = <WIN MAC>;
         };
 
-        muhennkann {
-            bindings = <&to_layer_0 INT_MUHENKAN>;
-            key-positions = <11 10>;
+        // 英数+かな = tap:Esc / hold:BLE層 (sayu-hub意識)
+        // moNa2: 38 39 → roBa: 39 40 (39=ホイール押下キー, 40=かな)
+        // NOTE: BLE 層は studio_unlock の唯一の入口。Studio でこのスロットを
+        //       壊すと Studio に入れなくなるが、settings_reset.uf2 で復旧できる。
+        combo_esc_ble {
+            slot = <2>;
+            display-name = "Esc / BLE";
+            bindings = <&lt BLE ESC>;
+            key-positions = <39 40>;
+            layers = <WIN MAC O24>;  // O24 トグル中も BLE 層へ入れるよう含める
         };
 
-        double_quotation {
-            bindings = <&kp DOUBLE_QUOTES>;
-            key-positions = <20 21>;
+        // J+K = コピー / K+L = ペースト (OS別に修飾を分岐)
+        // moNa2: 17 18 / 18 19 → roBa: 18 19 / 19 20
+        combo_copy_mac {
+            slot = <3>;
+            display-name = "Copy (Mac)";
+            bindings = <&kp LG(C)>;
+            key-positions = <18 19>;
+            layers = <MAC>;
         };
 
-        eq {
-            bindings = <&kp EQUAL>;
-            key-positions = <24 25>;
+        combo_copy_win {
+            slot = <4>;
+            display-name = "Copy (Win)";
+            bindings = <&kp LC(C)>;
+            key-positions = <18 19>;
+            layers = <WIN>;
+        };
+
+        combo_paste_mac {
+            slot = <5>;
+            display-name = "Paste (Mac)";
+            bindings = <&kp LG(V)>;
+            key-positions = <19 20>;
+            layers = <MAC>;
+        };
+
+        combo_paste_win {
+            slot = <6>;
+            display-name = "Paste (Win)";
+            bindings = <&kp LC(V)>;
+            key-positions = <19 20>;
+            layers = <WIN>;
+        };
+
+        // Q+P = O24 トグル   (moNa2: 0 9 → 変化なし)
+        combo_toO24 {
+            slot = <7>;
+            display-name = "O24 toggle";
+            bindings = <&tog O24>;
+            key-positions = <0 9>;
+            layers = <MAC WIN O24>;  // 機能層での Q+P 誤爆を防止
         };
     };
 
     macros {
-        to_layer_0: to_layer_0 {
-            compatible = "zmk,behavior-macro-one-param";
-            #binding-cells = <1>;
-            bindings = <&to 0 &macro_param_1to1 &kp MACRO_PLACEHOLDER>;
-            label = "TO_LAYER_0";
+        // OSをBTプロファイルに紐づけて切替 (BT0=Mac / BT1=Win / BT2=Win)
+
+        bt_mac0: bt_mac0 {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&to MAC &bt BT_SEL 0>;
+            label = "BT_MAC0";
+        };
+
+        bt_win1: bt_win1 {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&to WIN &bt BT_SEL 1>;
+            label = "BT_WIN1";
+        };
+
+        bt_win2: bt_win2 {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&to WIN &bt BT_SEL 2>;
+            label = "BT_WIN2";
+        };
+
+        // Mac: ⌘⇧4 → Space で「ウィンドウ単位」スクショ (2段操作をマクロ化)
+
+        ss_window_mac: ss_window_mac {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <50>;
+            tap-ms = <30>;
+            bindings = <&kp LG(LS(N4)) &kp SPACE>;
+            label = "SS_WINDOW_MAC";
+        };
+
+        // Win: 対角スナップ (2ストローク: Win+方向 × 2)
+
+        snap_w_tl: snap_w_tl {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <50>;
+            tap-ms = <30>;
+            bindings = <&kp LG(LEFT) &kp LG(UP)>;
+            label = "SNAP_W_TL";
+        };
+
+        snap_w_tr: snap_w_tr {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <50>;
+            tap-ms = <30>;
+            bindings = <&kp LG(RIGHT) &kp LG(UP)>;
+            label = "SNAP_W_TR";
+        };
+
+        snap_w_bl: snap_w_bl {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <50>;
+            tap-ms = <30>;
+            bindings = <&kp LG(LEFT) &kp LG(DOWN)>;
+            label = "SNAP_W_BL";
+        };
+
+        snap_w_br: snap_w_br {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <50>;
+            tap-ms = <30>;
+            bindings = <&kp LG(RIGHT) &kp LG(DOWN)>;
+            label = "SNAP_W_BR";
         };
     };
 
     behaviors {
-        lt_to_layer_0: lt_to_layer_0 {
-            compatible = "zmk,behavior-hold-tap";
-            label = "LAYER_TAP_TO_0";
-            bindings = <&mo>, <&to_layer_0>;
+        // Backspace 専用 mod-tap: タップ→即長押し(quick-tap)で BS をオートリピート
 
+        mt_bspc: mt_bspc {
+            compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
+            bindings = <&kp>, <&kp>;
+
+            flavor = "balanced";
             tapping-term-ms = <200>;
+            quick-tap-ms = <200>;
+#if MT_REQUIRE_PRIOR_IDLE_MS > 0
+            require-prior-idle-ms = <MT_REQUIRE_PRIOR_IDLE_MS>;
+#endif
         };
 
-        // 左手ホイールの回転割当。&inc_dec_kp のままだと ZMK Studio が
-        // sensor-bindings を編集対象に出さないためコンパイル時固定になる。
-        // runtime-sensor-rotate にしておくと Studio からレイヤーごとに
-        // 変更できる (音量/スクロール/タブ切替などへ後から差し替え可能)。
-        // ここでの既定値は移行前の挙動をそのまま維持している。
+        // ---- 左手ホイールの回転 ----
+        // runtime-sensor-rotate にしておくと DYA Studio からレイヤーごとに
+        // 割当を変更できる (&inc_dec_kp のままだと Studio は sensor-bindings を
+        // 編集対象に出さないのでコンパイル時固定になる)。
 
-        // default_layer 用: 旧 &inc_dec_kp PG_UP PAGE_DOWN と同じ
+        // moNa2 と同じ既定: ベース層ではホイール=スクロール
+        scroll_up_down: scroll_up_down {
+            compatible = "zmk,behavior-runtime-sensor-rotate";
+            #sensor-binding-cells = <0>;
+            cw-binding = <&msc SCRL_DOWN>;
+            ccw-binding = <&msc SCRL_UP>;
+            tap-ms = <100>;
+        };
+
+        // NAV / BLE 層では音量
+        rsr_vol: rsr_vol {
+            compatible = "zmk,behavior-runtime-sensor-rotate";
+            #sensor-binding-cells = <0>;
+            cw-binding = <&kp C_VOL_DN>;
+            ccw-binding = <&kp C_VOL_UP>;
+            tap-ms = <100>;
+        };
+
+        // 本家 roBa の割当。今はどの層にも割り当てていないが、
+        // 使い慣れた PgUp/PgDn へ戻したくなったら sensor-bindings を
+        // 差し替えるだけで済むよう残してある (Studio からも選べる)。
         rsr_pg: rsr_pg {
             compatible = "zmk,behavior-runtime-sensor-rotate";
             #sensor-binding-cells = <0>;
@@ -80,8 +294,7 @@
             tap-ms = <100>;
         };
 
-        // ARROW 層用: 旧 &inc_dec_kp LC(PAGE_UP) LC(PAGE_DOWN) と同じ
-        // (ブラウザのタブ切替)
+        // 本家 roBa の ARROW 層割当 (ブラウザのタブ切替)
         rsr_tab: rsr_tab {
             compatible = "zmk,behavior-runtime-sensor-rotate";
             #sensor-binding-cells = <0>;
@@ -89,76 +302,297 @@
             ccw-binding = <&kp LC(PAGE_DOWN)>;
             tap-ms = <100>;
         };
+
+        // クリック層用 hold-tap: タップ=caps_word / 長押し=クリック層(CLICK)
+        // caps_word は #binding-cells=0 のため、起動時はタップ側パラメータ(0)を渡すが caps_word は無視する
+        clk_caps: clk_caps {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <200>;
+            quick-tap-ms = <200>;
+            bindings = <&mo>, <&caps_word>;
+        };
+
     };
 
     keymap {
         compatible = "zmk,keymap";
 
-        default_layer {
+        mac_layer {
+            display-name = "MAC";
             bindings = <
-&kp Q             &kp W         &kp E         &kp R                        &kp T                                                        &kp Y        &kp U  &lt 5 I    &kp O    &kp P
-&kp A             &kp S         &kp D         &kp F                        &kp G        &kp LS(LG(S))                    &kp MINUS      &kp H        &kp J  &kp K      &kp L    &kp SQT
-&mt LEFT_SHIFT Z  &kp X         &kp C         &kp V                        &kp B        &kp COLON                        &kp SEMICOLON  &kp N        &kp M  &kp COMMA  &kp DOT  &kp SLASH
-&kp LCTRL         &kp LEFT_WIN  &kp LEFT_ALT  &lt_to_layer_0 6 LANGUAGE_1  &lt 2 SPACE  &lt_to_layer_0 3 LANGUAGE_2      &kp BACKSPACE  &lt 1 ENTER                             &kp DEL
+&lt GESTURE_SNAP_MAC Q  &kp W      &kp E     &kp R               &kp T                                                             &kp Y          &kp U  &kp I      &kp O    &lt GESTURE_PAN P
+&kp A                   &kp S      &kp D     &kp F               &kp G          &kp TAB                          &kp JIS_AT        &kp H          &kp J  &kp K      &kp L    &mt RGUI JIS_MINUS
+&mt LSHFT Z             &kp X      &kp C     &kp V               &kp B          &clk_caps CLICK 0                &kp JIS_UNDER     &kp N          &kp M  &kp COMMA  &kp DOT  &mt RSHFT JIS_FSLH
+&kp LGUI                &kp LCTRL  &kp LALT  &mt_bspc LGUI BSPC  &lt SYM SPACE  &lt NAV_MAC LANG2                &lt NAV_MAC LANG1 &lt NUM ENTER                             &lt CLICK DEL
             >;
 
-            sensor-bindings = <&rsr_pg>;
+            sensor-bindings = <&scroll_up_down>;
         };
 
-        FUNCTION {
+        win_layer {
+            display-name = "WIN";
             bindings = <
-&trans  &trans  &trans  &trans  &trans                       &kp F1  &kp F2  &kp F3  &kp F4  &kp F5
-&trans  &trans  &trans  &trans  &trans  &trans      &kp F13  &kp F6  &kp F7  &kp F8  &kp F9  &kp F10
-&trans  &trans  &trans  &trans  &trans  &trans      &trans   &trans  &trans  &trans  &trans  &kp F11
-&trans  &trans  &trans  &trans  &trans  &trans      &trans   &trans                          &kp F12
-            >;
-        };
-
-        NUM {
-            bindings = <
-&kp MINUS                   &kp KP_NUMBER_7  &kp KP_NUMBER_8  &kp KP_NUMBER_9  &kp PLUS                                                   &kp CARET         &kp AMPERSAND      &kp TILDE       &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS
-&kp SLASH                   &kp KP_NUMBER_4  &kp KP_NUMBER_5  &kp KP_NUMBER_6  &kp ASTERISK  &kp LC(LA(KP_NUMBER_0))      &kp UNDERSCORE  &kp EXCLAMATION   &kp AT_SIGN        &kp HASH        &kp DOLLAR            &kp PERCENT
-&mt LEFT_SHIFT KP_NUMBER_0  &kp KP_NUMBER_1  &kp KP_NUMBER_2  &kp KP_NUMBER_3  &kp PERIOD    &kp EQUAL                    &trans          &kp LEFT_BRACKET  &kp RIGHT_BRACKET  &kp LEFT_BRACE  &kp RIGHT_BRACE       &kp BACKSLASH
-&trans                      &trans           &trans           &trans           &trans        &trans                       &trans          &trans                                                                     &kp PIPE
-            >;
-        };
-
-        ARROW {
-            bindings = <
-&kp ESCAPE      &kp LC(LS(TAB))         &kp UP_ARROW    &kp LC(TAB)              &trans                       &trans  &trans  &trans  &trans  &trans
-&kp HOME        &kp LEFT_ARROW          &kp DOWN_ARROW  &kp RIGHT_ARROW          &kp END  &trans      &trans  &trans  &trans  &trans  &trans  &trans
-&kp LEFT_SHIFT  &kp LG(LS(LEFT_ARROW))  &trans          &kp LG(LS(RIGHT_ARROW))  &trans   &trans      &trans  &trans  &trans  &trans  &trans  &trans
-&trans          &trans                  &trans          &trans                   &trans   &trans      &trans  &trans                          &trans
+&lt GESTURE_SNAP_WIN Q  &kp W      &kp E     &kp R                &kp T                                                            &kp Y          &kp U  &kp I      &kp O    &lt GESTURE_PAN P
+&kp A                   &kp S      &kp D     &kp F                &kp G          &kp TAB                         &kp JIS_AT        &kp H          &kp J  &kp K      &kp L    &mt RCTRL JIS_MINUS
+&mt LSHFT Z             &kp X      &kp C     &kp V                &kp B          &clk_caps CLICK 0               &kp JIS_UNDER     &kp N          &kp M  &kp COMMA  &kp DOT  &mt RSHFT JIS_FSLH
+&kp LCTRL               &kp LGUI   &kp LALT  &mt_bspc LCTRL BSPC  &lt SYM SPACE  &lt NAV_WIN LANG2               &lt NAV_WIN LANG1 &lt NUM ENTER                             &lt CLICK DEL
             >;
 
-            sensor-bindings = <&rsr_tab>;
+            sensor-bindings = <&scroll_up_down>;
         };
 
-        MOUSE {
+        O24 {
+            display-name = "O24";
             bindings = <
-&trans  &trans  &trans  &trans  &trans                      &trans  &trans    &trans    &trans    &trans
-&trans  &trans  &trans  &trans  &trans  &trans      &trans  &trans  &mkp MB1  &mkp MB3  &mkp MB2  &trans
-&trans  &trans  &trans  &trans  &trans  &trans      &trans  &trans  &trans    &trans    &trans    &trans
-&trans  &trans  &trans  &trans  &trans  &trans      &trans  &trans                                &trans
+&kp Q     &kp L   &kp U   &kp COMMA  &kp DOT                              &kp F   &kp W  &kp R  &kp Y  &kp P
+&kp E     &kp I   &kp A   &kp O      &kp MINUS  &trans            &trans  &kp K   &kp T  &kp N  &kp S  &kp H
+&kp FSLH  &kp Z   &kp X   &kp C      &kp V      &trans            &trans  &kp G   &kp D  &kp M  &kp J  &kp B
+&trans    &trans  &trans  &trans     &trans     &trans            &trans  &trans                       &trans
             >;
+
+            sensor-bindings = <&scroll_up_down>;
         };
 
-        SCROLL {
+        sym_layer {
+            display-name = "SYM";
             bindings = <
-&trans  &trans  &trans  &trans  &trans                      &trans  &trans  &trans  &trans  &trans
-&trans  &trans  &trans  &trans  &trans  &trans      &trans  &trans  &trans  &trans  &trans  &trans
-&trans  &trans  &trans  &trans  &trans  &trans      &trans  &trans  &trans  &trans  &trans  &trans
-&trans  &trans  &trans  &trans  &trans  &trans      &trans  &trans                          &trans
+&kp JIS_EXCL   &kp JIS_DQT    &kp JIS_HASH  &kp JIS_DLR    &kp JIS_PCT                                  &kp JIS_AMPS  &kp JIS_QUOTE  &kp JIS_LPAR  &kp JIS_RPAR  &kp JIS_PIPE
+&kp JIS_CARET  &kp JIS_TILDE  &kp JIS_PLUS  &kp JIS_MINUS  &kp JIS_STAR  &kp JIS_BSLH    &kp JIS_YEN    &kp JIS_LBRC  &kp JIS_RBRC   &kp JIS_LBKT  &kp JIS_RBKT  &kp JIS_EQUAL
+&kp N1         &kp N2         &kp N3        &kp N4         &kp N5        &kp JIS_SEMI    &kp JIS_COLON  &kp N6        &kp N7         &kp N8        &kp N9        &kp N0
+&trans         &trans         &trans        &kp BSPC       &trans        &trans          &trans         &kp ENTER                                                &trans
             >;
+
+            sensor-bindings = <&scroll_up_down>;
         };
 
-        layer_6 {
+        num_layer {
+            display-name = "NUM";
             bindings = <
-&trans  &trans        &trans        &trans        &trans                           &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4
-&trans  &trans        &trans        &trans        &trans  &trans      &trans       &trans        &trans        &trans        &trans        &trans
-&trans  &kp NUMBER_1  &kp NUMBER_2  &kp NUMBER_3  &trans  &trans      &bootloader  &trans        &trans        &trans        &trans        &bt BT_CLR
-&trans  &trans        &trans        &trans        &trans  &trans      &trans       &trans                                                  &bt BT_CLR_ALL
+&kp F1   &kp F2   &kp F3  &kp F4  &kp F5                            &kp KP_MULTIPLY  &kp KP_N7  &kp KP_N8  &kp KP_N9  &kp KP_DIVIDE
+&kp F6   &kp F7   &kp F8  &kp F9  &kp F10  &kp F13          &trans  &kp KP_PLUS      &kp KP_N4  &kp KP_N5  &kp KP_N6  &kp KP_MINUS
+&kp F11  &kp F12  &trans  &trans  &trans   &trans           &trans  &kp KP_N0        &kp KP_N1  &kp KP_N2  &kp KP_N3  &kp KP_DOT
+&trans   &trans   &trans  &trans  &trans   &trans           &trans  &kp ENTER                                         &kp DEL
             >;
+
+            sensor-bindings = <&scroll_up_down>;
         };
+
+        nav_mac_layer {
+            display-name = "NAV-M";
+            bindings = <
+&kp ESC    &trans     &kp UP     &trans     &kp LC(UP)                     &trans        &ss_window_mac  &kp UP    &kp LG(LS(N4))  &kp LG(LS(N3))
+&kp HOME   &kp LEFT   &kp DOWN   &kp RIGHT  &kp END     &trans     &trans  &kp C_MUTE    &kp LEFT        &kp DOWN  &kp RIGHT       &trans
+&kp LSHFT  &kp PG_UP  &kp PG_DN  &trans     &kp ENTER   &trans     &trans  &kp C_BRI_DN  &kp C_PREV      &kp C_PP  &kp C_NEXT      &kp C_BRI_UP
+&trans     &trans     &trans     &kp BSPC   &kp SPACE   &trans     &trans  &kp ENTER                                               &kp DEL
+            >;
+
+            sensor-bindings = <&rsr_vol>;
+        };
+
+        nav_win_layer {
+            display-name = "NAV-W";
+            bindings = <
+&kp ESC    &trans     &kp UP     &trans     &kp LG(TAB)                     &trans        &kp LA(PSCRN)  &kp UP    &kp LG(LS(S))  &kp PSCRN
+&kp HOME   &kp LEFT   &kp DOWN   &kp RIGHT  &kp END      &trans     &trans  &kp C_MUTE    &kp LEFT       &kp DOWN  &kp RIGHT      &trans
+&kp LSHFT  &kp PG_UP  &kp PG_DN  &trans     &kp ENTER    &trans     &trans  &kp C_BRI_DN  &kp C_PREV     &kp C_PP  &kp C_NEXT     &kp C_BRI_UP
+&trans     &trans     &trans     &kp BSPC   &kp SPACE    &trans     &trans  &kp ENTER                                             &kp DEL
+            >;
+
+            sensor-bindings = <&rsr_vol>;
+        };
+
+        mouse_layer {
+            display-name = "MOUSE";
+            bindings = <
+&trans  &trans  &trans  &trans  &trans                         &trans  &trans    &trans    &trans    &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans  &mkp MB1  &mkp MB3  &mkp MB2  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans  &mkp MB4  &trans    &mkp MB5  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans                                &trans
+            >;
+
+            sensor-bindings = <&scroll_up_down>;
+        };
+
+        ble_layer {
+            display-name = "BLE";
+            bindings = <
+&trans  &trans  &trans  &trans  &trans                              &bt_mac0      &bt_win1  &bt_win2  &bt BT_SEL 3  &bt BT_SEL 4
+&trans  &trans  &trans  &trans  &trans  &trans         &trans       &out OUT_TOG  &trans    &trans    &trans        &studio_unlock
+&trans  &trans  &trans  &trans  &trans  &trans         &bootloader  &trans        &trans    &trans    &trans        &bt BT_CLR
+&trans  &trans  &trans  &trans  &trans  &trans         &trans       &trans                                          &bt BT_CLR_ALL
+            >;
+
+            sensor-bindings = <&rsr_vol>;
+        };
+
+        gesture_pan_layer {
+            display-name = "PAN";
+            bindings = <
+&trans  &trans  &trans  &trans  &trans                         &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans                          &trans
+            >;
+
+            sensor-bindings = <&scroll_up_down>;
+        };
+
+        gesture_snap_mac_layer {
+            display-name = "SNAP-M";
+            bindings = <
+&trans  &trans  &trans  &trans  &trans                         &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans                          &trans
+            >;
+
+            sensor-bindings = <&scroll_up_down>;
+        };
+
+        gesture_snap_win_layer {
+            display-name = "SNAP-W";
+            bindings = <
+&trans  &trans  &trans  &trans  &trans                         &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans                          &trans
+            >;
+
+            sensor-bindings = <&scroll_up_down>;
+        };
+
+        cursor_layer {
+            display-name = "CURSOR";
+            bindings = <
+&trans  &trans  &trans  &trans  &trans                         &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans                          &trans
+            >;
+
+            sensor-bindings = <&scroll_up_down>;
+        };
+
+        // クリック層: DEL長押し or 「Bの一つ右」長押しで起動。両手にクリッククラスタ。
+        // トラックボールはデフォルトチェーンを通るのでカーソルは普通に動き、AMLと独立して共存する。
+        // 左手 S/D/F=左/中/右クリック・X/V=戻る/進む / 右手 J/K/L=左/中/右クリック・M/.=戻る/進む
+        click_layer {
+            display-name = "CLICK";
+            bindings = <
+&trans  &trans    &trans    &trans    &trans                           &trans  &trans    &trans    &trans    &trans
+&trans  &mkp MB1  &mkp MB3  &mkp MB2  &trans  &trans           &trans  &trans  &mkp MB1  &mkp MB3  &mkp MB2  &trans
+&trans  &mkp MB4  &trans    &mkp MB5  &trans  &trans           &trans  &trans  &mkp MB4  &trans    &mkp MB5  &trans
+&trans  &trans    &trans    &trans    &trans  &trans           &trans  &trans                                &trans
+            >;
+
+            sensor-bindings = <&scroll_up_down>;
+        };
+    };
+};
+
+// ---- マウスジェスチャー設定 ----
+// Mac: Rectangle のデフォルトショートカット (Ctrl+Option+矢印)。変更する場合はここを修正。
+//
+// stroke-size は cpi に比例する。moNa2 は cpi=800 で 200。
+// roBa は cpi=400 なので、同じ「指の移動距離」になる 100 にしてある。
+// フリックが暴発する / 認識しない場合はここを増減する。
+
+&zip_mouse_gesture {
+    stroke-size = <100>;
+    enable-eager-mode;
+    gesture-cooldown-ms = <200>;
+    always-active;                // &lt によるレイヤー起動のみで動作させる(起動キー &mouse_gesture 不要)
+
+    snap_left {
+        pattern = <GESTURE_LEFT>;
+        bindings = <&kp LC(LA(LEFT))>;
+    };
+
+    snap_right {
+        pattern = <GESTURE_RIGHT>;
+        bindings = <&kp LC(LA(RIGHT))>;
+    };
+
+    snap_max {
+        pattern = <GESTURE_UP>;
+        bindings = <&kp LC(LA(RET))>;
+    };
+
+    snap_center {
+        pattern = <GESTURE_DOWN>;
+        bindings = <&kp LC(LA(C))>;
+    };
+
+    // 四隅(↖↗↙↘): モジュールが4方向のみ認識するため現状発火しない（将来対応時に備えて残置）
+    snap_tl {
+        pattern = <GESTURE_UP_LEFT>;
+        bindings = <&kp LC(LA(U))>;
+    };
+
+    snap_tr {
+        pattern = <GESTURE_UP_RIGHT>;
+        bindings = <&kp LC(LA(I))>;
+    };
+
+    snap_bl {
+        pattern = <GESTURE_DOWN_LEFT>;
+        bindings = <&kp LC(LA(J))>;
+    };
+
+    snap_br {
+        pattern = <GESTURE_DOWN_RIGHT>;
+        bindings = <&kp LC(LA(K))>;
+    };
+};
+
+// Win: 標準スナップ (Win+矢印)
+
+&zip_mouse_gesture_win {
+    stroke-size = <100>;
+    enable-eager-mode;
+    gesture-cooldown-ms = <200>;
+    always-active;                // &lt によるレイヤー起動のみで動作させる(起動キー &mouse_gesture 不要)
+
+    snap_left_w {
+        pattern = <GESTURE_LEFT>;
+        bindings = <&kp LG(LEFT)>;
+    };
+
+    snap_right_w {
+        pattern = <GESTURE_RIGHT>;
+        bindings = <&kp LG(RIGHT)>;
+    };
+
+    snap_max_w {
+        pattern = <GESTURE_UP>;
+        bindings = <&kp LG(UP)>;
+    };
+
+    snap_rest_w {
+        pattern = <GESTURE_DOWN>;
+        bindings = <&kp LG(DOWN)>;
+    };
+
+    // 四隅(↖↗↙↘): モジュールが4方向のみ認識するため現状発火しない（将来対応時に備えて残置）
+    snap_tl_w {
+        pattern = <GESTURE_UP_LEFT>;
+        bindings = <&snap_w_tl>;
+    };
+
+    snap_tr_w {
+        pattern = <GESTURE_UP_RIGHT>;
+        bindings = <&snap_w_tr>;
+    };
+
+    snap_bl_w {
+        pattern = <GESTURE_DOWN_LEFT>;
+        bindings = <&snap_w_bl>;
+    };
+
+    snap_br_w {
+        pattern = <GESTURE_DOWN_RIGHT>;
+        bindings = <&snap_w_br>;
     };
 };

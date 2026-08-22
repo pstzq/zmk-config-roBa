@@ -22,6 +22,22 @@
 };
 
 / {
+    // 慣性スクロール (shakushakupanda/zmk-module-mouse-gesture-rpc)
+    // 本家 roBa のドライバには慣性スクロール機能が無く、cormoran 版にも無い。
+    // moNa2 と同じく入力プロセッサ方式で足す。
+    // 有効範囲は「どのチェーンに挿すか」で決まるので、下の scroller にのみ挿す。
+    inertial_scroll: inertial_scroll {
+        compatible = "zmk,input-processor-inertial-scroll";
+        status = "okay";
+        #input-processor-cells = <0>;
+        enabled;                    // 既定で有効 (モジュール既定はオフ)
+        track-remainders;           // 端数を切り捨てず次のtickへ持ち越す。
+                                    // 無いと低速時に値が0に丸められてカクつく
+        impulse-percent = <200>;
+        decay-percent = <93>;
+        tick-ms = <10>;
+    };
+
     trackball_listener {
         status = "okay";
         compatible = "zmk,input-listener";
@@ -31,37 +47,79 @@
         // 実現していたが、cormoran 版ドライバにその機能は無い。
         // v0.4 の入力プロセッサへ移し替えている。
         //
-        // 通常時: カーソル移動。ボールを動かすと MOUSE 層(4)を一時有効化
-        //   (= 旧 automouse-layer = <4> と CONFIG_PMW3610_AUTOMOUSE_TIMEOUT_MS=700)
-        input-processors = <&mouse_runtime_input_processor &zip_temp_layer 4 700>;
+        // 通常時: カーソル移動。ボールを動かすと MOUSE 層を一時有効化
+        //   (= 旧 automouse-layer)。moNa2 のキーマップ移植に伴い
+        //   MOUSE 層は 4 -> 7 へ移動した。タイムアウトは moNa2 実機で
+        //   決めた 500ms を採用 (本家 roBa は 700ms)。
+        input-processors = <&mouse_runtime_input_processor &zip_temp_layer 7 500>;
 
-        // SCROLL 層(5)ではカーソル移動ではなくスクロールにする
-        //   (= 旧 scroll-layers = <5>)
+        // NUM(4) / NAV_MAC(5) / NAV_WIN(6) でカーソル移動ではなくスクロールにする
+        //   (本家の scroll-layers = <5> に相当。moNa2 の設計に合わせて3層へ拡張)
         scroller {
-            layers = <5>;
+            layers = <4 5 6>;
             input-processors =
                 <&zip_xy_to_scroll_mapper
                  &zip_scroll_transform INPUT_TRANSFORM_X_INVERT
+                 &inertial_scroll
                  &zip_scroll_scaler 1 16
                  &scroll_runtime_input_processor>;
             // scaler 1/16 は旧 CONFIG_PMW3610_SCROLL_TICK=16 に対応する値。
             // X反転は旧 CONFIG_PMW3610_INVERT_SCROLL_X=y に対応。
+            //
+            // 順序が重要: &inertial_scroll は scaler の「前」に置くこと。
+            // zip_scroll_scaler には端数を蓄積する仕組みが無いため、後ろに
+            // 置くと 1/16 に切り捨てられて 0 になった値に慣性をかけることに
+            // なり「ちょびちょび・カクカク」になる (moNa2 で実際に嵌った)。
+            //
             // 速度は DYA Studio のトラックボールタブから実行時に調整できる。
+        };
+
+        // P長押し(GESTURE_PAN=9): 2D自由スクロール(パン)。
+        // ざっと移動する用途なので scroller(1/16) の約3倍にしてある。
+        panner {
+            layers = <9>;
+            input-processors =
+                <&zip_xy_to_scroll_mapper
+                 &zip_scroll_transform INPUT_TRANSFORM_X_INVERT
+                 &zip_scroll_scaler 3 16
+                 &scroll_runtime_input_processor>;
+        };
+
+        // Q長押し(GESTURE_SNAP_MAC=10): Mac ウィンドウスナップ(Rectangle)
+        // zip_xy_to_scroll_mapper + scaler 0/1 は「カーソルを動かさない」ための細工。
+        // REL_X/Y を WHEEL に型変換して値を0にすることで、ジェスチャー中の
+        // カーソル移動を確実に殺す (PAN と同じ原理)。
+        // モジュールの suppress-cursor-while-active は起動キーの押下状態から
+        // 抑止フラグを立てる実装なので、always-active の本構成では効かない。
+        gesturer_mac {
+            layers = <10>;
+            input-processors = <
+                &zip_mouse_gesture
+                &zip_xy_to_scroll_mapper
+                &zip_scroll_scaler 0 1
+            >;
+        };
+
+        // Q長押し(GESTURE_SNAP_WIN=11): Win ウィンドウスナップ(Win+矢印)
+        gesturer_win {
+            layers = <11>;
+            input-processors = <
+                &zip_mouse_gesture_win
+                &zip_xy_to_scroll_mapper
+                &zip_scroll_scaler 0 1
+            >;
         };
     };
 };
 
-// スクロール用 runtime input processor の初期倍率を 1/1 にする。
-// モジュール既定は 1/60 で、そのままだと実効が 1/16 x 1/60 = 1/960 になり
-// 「何をしても鈍い」状態になる (moNa2 で実際にこれに嵌った)。
-// 固定減速は上の zip_scroll_scaler に一本化し、ここは
-// 「Studio の表示倍率 = 実効倍率」に揃える。
-//
-// 注意: これは "Initial" 値。一度 Studio で保存すると以後はフラッシュ側が
-// 優先されるため、焼き直してもスライダーは前の値のまま。
-&scroll_runtime_input_processor {
-    scale-multiplier = <1>;
-    scale-divisor = <1>;
+// オートマウスレイヤー(AML)の暴発対策。moNa2 の値をキー位置シフト規則
+// (moNa2 の i -> roBa の i<15 ? i : i+1) で移してある:
+//   moNa2 <0 10 17 18 19 21 29 31> -> roBa <0 10 18 19 20 22 30 32>
+// = Q / A / J K L / X / M . 。これらを押している間はボールが動いても
+// MOUSE 層へ移行しない。
+&zip_temp_layer {
+    excluded-positions = <0 10 18 19 20 22 30 32>;
+    require-prior-idle-ms = <500>;  // 打鍵直後この時間はAMLを起こさない
 };
 
 &pinctrl {

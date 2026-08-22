@@ -1,9 +1,22 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
+// マウスジェスチャー (shakushakupanda/zmk-mouse-gesture)。
+// zip_mouse_gesture の実体はここで定義される。
+// NOTE: この dtsi は RC() を再定義しないので、下のマトリクス RC(row,col)
+//       とは衝突しない (衝突するのは runtime-input-processor.dtsi の方)。
+#include <mouse-gesture.dtsi>
 
 / {
     chosen {
         zmk,physical-layout = &roba_physical_layout;
+    };
+
+    // Windows用ジェスチャープロセッサ (Mac用は mouse-gesture.dtsi の
+    // zip_mouse_gesture を使用)。roBa.keymap が左右共通で参照するため、
+    // 両ビルドから見えるこの dtsi に定義する。
+    zip_mouse_gesture_win: zip_mouse_gesture_win {
+        compatible = "zmk,input-processor-mouse-gesture";
+        #input-processor-cells = <0>;
     };
 
     roba_physical_layout: roba_physical_layout {

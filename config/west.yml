@@ -4,6 +4,8 @@ manifest:
       url-base: https://github.com/cormoran
     - name: kumamuk-git  # <-- roBa 本家 (現在は cormoran 版ドライバを使用)
       url-base: https://github.com/kumamuk-git
+    - name: shakushakupanda  # <-- Mouse Gesture フォーク + RPC/慣性スクロールモジュール
+      url-base: https://github.com/shakushakupanda
   projects:
     # ── ZMK 本体 ────────────────────────────────────────────────
     # DYA Studio のコンボ/マクロ編集は cormoran 氏の custom Studio RPC
@@ -82,5 +84,22 @@ manifest:
     - name: zmk-driver-pmw3610-with-custom-studio-rpc
       remote: cormoran
       revision: 5c34ea0eec24   # main @ 2026-08-12
+    # ── マウスジェスチャー + 慣性スクロール ──────────────────────
+    # moNa2 と同じ構成。SHA も moNa2 で実機確認済みのものを流用している。
+    #  - zmk-mouse-gesture: ジェスチャー入力プロセッサ本体
+    #    (zip_mouse_gesture / mouse-gesture.dtsi を提供)
+    #  - zmk-module-mouse-gesture-rpc: DYA Studio からのジェスチャー登録に
+    #    加え、慣性スクロールの入力プロセッサ
+    #    (zmk,input-processor-inertial-scroll) を提供する。こちらが本命
+    #  - suppress-cursor-while-active: ジェスチャー中のカーソル移動をモジュール側で抑止。
+    #    ただし抑止フラグは &mouse_gesture 等の起動キーの押下状態から立つ実装のため、
+    #    always-active で起動キーを使わない本構成には効かない。よって
+    #    roBa_R.overlay の zip_xy_to_scroll_mapper による抑止は温存すること
+    - name: zmk-mouse-gesture
+      remote: shakushakupanda
+      revision: 10597a47ed60   # suppress-cursor-while-active @ 2026-08-12
+    - name: zmk-module-mouse-gesture-rpc
+      remote: shakushakupanda
+      revision: 1374f1d487d5   # main @ 2026-08-12
   self:
     path: config

@@ -1,0 +1,128 @@
+name: Release Firmware
+
+# タグを push すると、そのコミットでビルドした uf2 を Releases に添付する。
+#   git tag v1.0.0 && git push origin v1.0.0
+# 手動実行(workflow_dispatch)の場合は既存タグ名を指定すること。
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "リリースするタグ名 (例: v1.0.0)。未作成のタグ名でよい(実行したrefのコミットに作られる)"
+        required: true
+      prerelease:
+        description: "プレリリースとして作成する (実機未確認のうちは true 推奨)"
+        type: boolean
+        default: true
+
+jobs:
+  # build.yml と同じ再利用ワークフローでビルドする。
+  # config/west.yml の zmk と同じ SHA に揃えること (main+dya @ 2026-08-12)。
+  build:
+    uses: cormoran/zmk/.github/workflows/build-user-config.yml@e5c9b6915b56801193e359dd9bad4a167ce0d1b8
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # build.yaml の artifact-name に対応して artifact-roBa_R / -roBa_L /
+      # -settings_reset という名前で上がってくる
+      - name: Download firmware artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          # pattern は指定しない。本家の再利用ワークフローはビルド毎の
+          # `artifact-<name>` を最後に `firmware` 1つへ統合して元を削除するため、
+          # このジョブが走る頃には `artifact-*` が存在しないことがある
+          # (2026-08-22 の v1.0.0-rc1 でこれに当たり、uf2 が0件で落ちた)。
+          # 全アーティファクトを取得して、下で *.uf2 を再帰的に拾う。
+
+      - name: Collect uf2 files
+        run: |
+          set -euo pipefail
+          mkdir -p dist artifacts
+          echo "--- 取得したアーティファクト ---"
+          ls -R artifacts || true
+          find artifacts -name '*.uf2' -exec cp -v {} dist/ \;
+          echo "--- リリースに添付する uf2 ---"
+          ls -la dist
+          # uf2 が1つも無いままリリースを作ってしまわないよう防ぐ
+          if [ -z "$(ls -A dist)" ]; then
+            echo "::error::uf2 が見つかりません。ビルドの artifact 名を確認してください"
+            exit 1
+          fi
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+            echo "prerelease=${{ inputs.prerelease }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            # タグ名に -rc / -beta などが含まれていればプレリリース扱い
+            case "${GITHUB_REF_NAME}" in
+              *-*) echo "prerelease=true"  >> "$GITHUB_OUTPUT" ;;
+              *)   echo "prerelease=false" >> "$GITHUB_OUTPUT" ;;
+            esac
+          fi
+
+      - name: Write release notes
+        run: |
+          cat > notes.md <<'EOF'
+          roBa 用ファームウェアです。
+
+          ## 書き込み手順
+
+          1. **`settings_reset-*.uf2` を左右両方に先に書き込む**
+          2. `roBa_L-*.uf2` → 左手 / `roBa_R-*.uf2` → 右手
+          3. BLE を再ペアリング（BT0=Mac / BT1・BT2=Windows）
+
+          > 手順1は省略しないでください。ZMK v0.4（Zephyr 4.1）で設定領域の構造が
+          > 変わっているため、リセットを挟まないと起動しない・挙動が壊れる可能性が
+          > あります。BLE ペアリングは全消去されます。
+
+          ## DYA Studio
+
+          右手側を USB 接続 → `英数`+`かな` で BLE 層 → `studio_unlock`（`L` の右隣）で解錠
+          → <https://studio.dya.cormoran.works/> で Connect。
+
+          キーマップ／**コンボ**／**マクロ**／トラックボール設定をブラウザから変更できます。
+
+          > DYA Studio で保存した内容は `.keymap` より優先されます。ファーム側の値へ
+          > 戻すには Web UI の "Reset to Default" か `settings_reset.uf2` を使ってください。
+
+          詳細は [README](../blob/main/README.md) を参照してください。
+          EOF
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          FLAGS=""
+          if [ "${{ steps.tag.outputs.prerelease }}" = "true" ]; then
+            FLAGS="--prerelease"
+          fi
+          # 同名タグのリリースが既にある場合は作り直さず、資産だけ差し替える
+          if gh release view "${{ steps.tag.outputs.name }}" >/dev/null 2>&1; then
+            echo "既存のリリースに uf2 を上書きします"
+            gh release upload "${{ steps.tag.outputs.name }}" dist/*.uf2 --clobber
+          else
+            # workflow_dispatch の場合はタグが未作成でも、実行した ref の
+            # コミットにタグを作ってからリリースする (--target)
+            TARGET=""
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              TARGET="--target ${{ github.sha }}"
+            fi
+            gh release create "${{ steps.tag.outputs.name }}" dist/*.uf2 \
+              --title "roBa ${{ steps.tag.outputs.name }}" \
+              --notes-file notes.md \
+              $FLAGS $TARGET
+          fi

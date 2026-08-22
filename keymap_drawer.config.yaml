@@ -1,0 +1,187 @@
+# keymap-drawer の描画設定。
+# .github/workflows/draw.yml が config_path として読む。
+#
+# これが無い間はずっと素のデフォルトで描かれていた。表が多くて追いにくい、
+# という課題に対して「図の側に機能を載せる」方向で調整している。
+
+draw_config:
+  # ── 見た目 ──────────────────────────────────────────────
+  # GitHub のライト/ダークテーマに追従する。README に貼ったときに
+  # 白背景の図が浮かない
+  dark_mode: auto
+
+  # 角を丸め、キーに側面を付けて立体感を出す
+  key_rx: 9.0
+  key_ry: 9.0
+  draw_key_sides: true
+
+  key_w: 62.0
+  key_h: 58.0
+  split_gap: 34.0
+  inner_pad_w: 3.0
+  inner_pad_h: 3.0
+  line_spacing: 1.25
+
+  # レイヤーを2列に並べて縦長を解消する
+  n_columns: 2
+
+  # ── 機能の可視化 ────────────────────────────────────────
+  # 「このキーを押すとどの層に行くか」を図の上で示す
+  mark_alternate_layer_activators: true
+  style_layer_activators: true
+
+  # コンボは本体の図に重ねて描く（別図に切り出さない）
+  separate_combo_diagrams: false
+  combo_w: 32.0
+  combo_h: 28.0
+
+  # 長い凡例が潰れないように
+  shrink_wide_legends: 6
+
+  # NOTE: footer_text は使わない。既定CSSの .footer には stroke 指定しか無く
+  # font-size が効かないため巨大な文字が図全体に重なって描画される。
+
+  # ── 追加スタイル ────────────────────────────────────────
+  svg_extra_style: |
+    svg.keymap { font-family: -apple-system, "Segoe UI", "Hiragino Sans",
+                 "Noto Sans JP", Roboto, sans-serif; }
+    /* レイヤー見出し: 図の中で一番の道標なので大きく、はっきり */
+    text.label { font-size: 16px; font-weight: 700; letter-spacing: 0.01em; }
+    /* コンボは他と混ざらないよう角丸を強めに */
+    rect.combo { rx: 7px; ry: 7px; }
+    /* hold 側の凡例は主役ではないので少し落とす */
+    text.hold { opacity: 0.78; }
+    /* 万一 footer を使うことがあっても暴れないように保険をかけておく */
+    text.footer { font-size: 13px; stroke: none; }
+
+
+# keymap-drawer はキーマップの「解析」時に使う設定を parse_config 配下に置く。
+# ラベル置換系(zmk_keycode_map / raw_binding_map / layer_legend_map)は
+# draw_config ではなくこちらに書かないと黙って無視される。
+parse_config:
+  # NOTE: layer_legend_map はここでは使わない。あれはキー内に出る小さな層ラベル
+  # (Space の下の "SYM" など) 用で、長い説明を入れるとキー幅からはみ出す。
+  # 図の見出しは scripts/drawer_enrich.py が YAML の層名ごと差し替えている。
+
+  # ── 読みやすいラベルへ置換 ──────────────────────────────
+  zmk_remove_keycode_prefix: ["C_", "K_", "KP_"]
+  # NOTE: zmk_keycode_map はユーザ設定が keymap-drawer の既定表を「置き換える」
+  # (マージではない)。上書きしたい分だけを書くと EQUAL / MINUS / LBKT などが
+  # 既定の `=` `-` `[` に短縮されず、長い名前のまま描かれてしまう。
+  # そのため既定表(64件)に自分の上書きを足した完全版をここへ展開してある。
+  # keymap-drawer を更新したときは既定表が増えている可能性があるので、
+  #   python -c "from keymap_drawer.config import Config; \
+  #              print(Config().parse_config.zmk_keycode_map)"
+  # と突き合わせること。
+  zmk_keycode_map:
+    EXCLAMATION: '!'
+    EXCL: '!'
+    AT_SIGN: '@'
+    AT: '@'
+    HASH: '#'
+    POUND: '#'
+    DOLLAR: $
+    DLLR: $
+    PERCENT: '%'
+    PRCNT: '%'
+    CARET: ^
+    AMPERSAND: '&'
+    AMPS: '&'
+    ASTERISK: '*'
+    ASTRK: '*'
+    STAR: '*'
+    LEFT_PARENTHESIS: (
+    LPAR: (
+    RIGHT_PARENTHESIS: )
+    RPAR: )
+    EQUAL: '='
+    PLUS: +
+    MINUS: '-'
+    UNDERSCORE: _
+    UNDER: _
+    SLASH: /
+    FSLH: /
+    QUESTION: '?'
+    QMARK: '?'
+    BACKSLASH: \
+    BSLH: \
+    PIPE: '|'
+    NON_US_BACKSLASH: \
+    PIPE2: '|'
+    NON_US_BSLH: '|'
+    SEMICOLON: ;
+    SEMI: ;
+    COLON: ':'
+    SINGLE_QUOTE: ''''
+    SQT: ''''
+    APOSTROPHE: ''''
+    APOS: ''''
+    DOUBLE_QUOTES: '"'
+    DQT: '"'
+    COMMA: ','
+    LESS_THAN: <
+    LT: <
+    PERIOD: .
+    DOT: .
+    GREATER_THAN: '>'
+    GT: '>'
+    LEFT_BRACKET: '['
+    LBKT: '['
+    LEFT_BRACE: '{'
+    LBRC: '{'
+    RIGHT_BRACKET: ']'
+    RBKT: ']'
+    RIGHT_BRACE: '}'
+    RBRC: '}'
+    GRAVE: '`'
+    TILDE: '~'
+    NON_US_HASH: '#'
+    NUHS: '#'
+    TILDE2: '~'
+    LEFT_GUI: ⌘
+    LEFT_CONTROL: Ctrl
+    LEFT_ALT: Alt
+    LEFT_SHIFT: Shift
+    LANGUAGE_1: かな
+    LANGUAGE_2: 英数
+    BACKSPACE: ⌫
+    DELETE: ⌦
+    ENTER: ⏎
+    SPACE: ␣
+    TAB: ⇥
+    ESCAPE: Esc
+    LEFT: ←
+    RIGHT: →
+    UP: ↑
+    DOWN: ↓
+    HOME: Home
+    END: End
+    PAGE_UP: PgUp
+    PAGE_DOWN: PgDn
+    CAPSLOCK: Caps
+    MULTIPLY: "×"
+    DIVIDE: "÷"
+    PSCRN: PrtSc
+    PRINTSCREEN: PrtSc
+
+  # マクロ・カスタム behavior は生の名前が出てキー幅からはみ出すので、
+  # 何をするキーなのかが分かる短い日本語に置き換える
+  raw_binding_map:
+    # roBa 固有: 左手サムのホイール回転 (runtime-sensor-rotate)
+    "&scroll_up_down": "スクロール"
+    "&rsr_vol": "音量"
+    "&rsr_pg": "PgUp/PgDn"
+    "&rsr_tab": "タブ切替"
+    "&bootloader": "Boot"
+    "&studio_unlock": "Studio解錠"
+    "&caps_word": "Caps Word"
+    "&clk_caps": {t: "Caps Word", h: "CLICK"}
+    "&bt_mac0": {t: "BT0", h: "Mac"}
+    "&bt_win1": {t: "BT1", h: "Win"}
+    "&bt_win2": {t: "BT2", h: "Win"}
+    "&ss_window_mac": "範囲SS"
+    "&mkp MB1": "左"   # 層名が「クリック層」なので1文字で通じる。長いと隣と重なる
+    "&mkp MB2": "右"
+    "&mkp MB3": "中"
+    "&mkp MB4": "戻る"
+    "&mkp MB5": "進む"

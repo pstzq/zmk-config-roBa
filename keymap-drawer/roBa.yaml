@@ -1,6 +1,31 @@
 layout: {zmk_keyboard: roBa}
+combos:
+- p: [11, 12]
+  k: TAB
+  l: ["1 · WIN — ベース (Windows)", "0 · MAC — ベース (Mac)"]
+- p: [12, 13]
+  k: Sft+TAB
+  l: ["1 · WIN — ベース (Windows)", "0 · MAC — ベース (Mac)"]
+- p: [39, 40]
+  k: {t: ESC, h: BLE}
+  l: ["1 · WIN — ベース (Windows)", "0 · MAC — ベース (Mac)", "2 · O24 — 代替配列 · Q+P でトグル"]
+- p: [18, 19]
+  k: Gui+C
+  l: ["0 · MAC — ベース (Mac)"]
+- p: [18, 19]
+  k: Ctl+C
+  l: ["1 · WIN — ベース (Windows)"]
+- p: [19, 20]
+  k: Gui+V
+  l: ["0 · MAC — ベース (Mac)"]
+- p: [19, 20]
+  k: Ctl+V
+  l: ["1 · WIN — ベース (Windows)"]
+- p: [0, 9]
+  k: {t: O24, h: toggle}
+  l: ["0 · MAC — ベース (Mac)", "1 · WIN — ベース (Windows)", "2 · O24 — 代替配列 · Q+P でトグル"]
 layers:
-  MAC:
+  "0 · MAC — ベース (Mac)":
   - {t: Q, h: SNAP-M}
   - W
   - E
@@ -16,7 +41,7 @@ layers:
   - D
   - F
   - G
-  - TAB
+  - ⇥
   - '['
   - H
   - J
@@ -28,7 +53,7 @@ layers:
   - C
   - V
   - B
-  - {t: '&caps_word', h: CLICK}
+  - {t: Caps Word, h: CLICK}
   - Sft+INT1
   - N
   - M
@@ -39,12 +64,12 @@ layers:
   - LCTRL
   - LALT
   - {t: BSPC, h: LGUI}
-  - {t: SPACE, h: SYM}
+  - {t: ␣, h: SYM}
   - {t: LANG2, h: NAV-M}
   - {t: LANG1, h: NAV-M}
-  - {t: ENTER, h: NUM}
+  - {t: ⏎, h: NUM}
   - {t: DEL, h: CLICK}
-  WIN:
+  "1 · WIN — ベース (Windows)":
   - {t: Q, h: SNAP-W}
   - W
   - E
@@ -60,7 +85,7 @@ layers:
   - D
   - F
   - G
-  - TAB
+  - ⇥
   - '['
   - H
   - J
@@ -72,7 +97,7 @@ layers:
   - C
   - V
   - B
-  - {t: '&caps_word', h: CLICK}
+  - {t: Caps Word, h: CLICK}
   - Sft+INT1
   - N
   - M
@@ -83,12 +108,12 @@ layers:
   - LGUI
   - LALT
   - {t: BSPC, h: LCTRL}
-  - {t: SPACE, h: SYM}
+  - {t: ␣, h: SYM}
   - {t: LANG2, h: NAV-W}
   - {t: LANG1, h: NAV-W}
-  - {t: ENTER, h: NUM}
+  - {t: ⏎, h: NUM}
   - {t: DEL, h: CLICK}
-  O24:
+  "2 · O24 — 代替配列 · Q+P でトグル":
   - Q
   - L
   - U
@@ -132,7 +157,7 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  SYM:
+  "3 · SYM — 記号 · Space 長押し":
   - Sft+1
   - Sft+2
   - Sft+3
@@ -174,19 +199,19 @@ layers:
   - {type: held}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - ENTER
+  - ⏎
   - {t: ▽, type: trans}
-  NUM:
+  "4 · NUM — 数字 · Enter 長押し":
   - F1
   - F2
   - F3
   - F4
   - F5
-  - KP MULTIPLY
-  - KP 7
-  - KP 8
-  - KP 9
-  - KP DIVIDE
+  - ×
+  - '7'
+  - '8'
+  - '9'
+  - ÷
   - F6
   - F7
   - F8
@@ -194,11 +219,11 @@ layers:
   - F10
   - F13
   - {t: ▽, type: trans}
-  - KP PLUS
-  - KP 4
-  - KP 5
-  - KP 6
-  - KP MINUS
+  - +
+  - '4'
+  - '5'
+  - '6'
+  - '-'
   - F11
   - F12
   - {t: ▽, type: trans}
@@ -206,11 +231,11 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - KP 0
-  - KP 1
-  - KP 2
-  - KP 3
-  - KP DOT
+  - '0'
+  - '1'
+  - '2'
+  - '3'
+  - .
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
@@ -218,36 +243,36 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - {t: ENTER, type: held}
+  - {t: ⏎, type: held}
   - DEL
-  NAV-M:
+  "5 · NAV-M — 矢印/ナビ (Mac) · 英数 or かな 長押し":
   - ESC
   - {t: ▽, type: trans}
-  - UP
+  - ↑
   - {t: ▽, type: trans}
-  - Ctl+UP
+  - Ctl+↑
   - {t: ▽, type: trans}
-  - '&ss_window_mac'
-  - UP
+  - 範囲SS
+  - ↑
   - Gui+Sft+4
   - Gui+Sft+3
-  - HOME
-  - LEFT
-  - DOWN
-  - RIGHT
-  - END
+  - Home
+  - ←
+  - ↓
+  - →
+  - End
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - MUTE
-  - LEFT
-  - DOWN
-  - RIGHT
+  - ←
+  - ↓
+  - →
   - {t: ▽, type: trans}
   - LSHFT
   - PG UP
   - PG DN
   - {t: ▽, type: trans}
-  - ENTER
+  - ⏎
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - BRI DN
@@ -259,39 +284,39 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - BSPC
-  - SPACE
+  - ␣
   - {type: held}
   - {t: ▽, type: trans}
-  - ENTER
+  - ⏎
   - DEL
-  NAV-W:
+  "6 · NAV-W — 矢印/ナビ (Win) · 英数 or かな 長押し":
   - ESC
   - {t: ▽, type: trans}
-  - UP
+  - ↑
   - {t: ▽, type: trans}
-  - Gui+TAB
+  - Gui+⇥
   - {t: ▽, type: trans}
-  - Alt+PSCRN
-  - UP
+  - Alt+PrtSc
+  - ↑
   - Gui+Sft+S
-  - PSCRN
-  - HOME
-  - LEFT
-  - DOWN
-  - RIGHT
-  - END
+  - PrtSc
+  - Home
+  - ←
+  - ↓
+  - →
+  - End
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - MUTE
-  - LEFT
-  - DOWN
-  - RIGHT
+  - ←
+  - ↓
+  - →
   - {t: ▽, type: trans}
   - LSHFT
   - PG UP
   - PG DN
   - {t: ▽, type: trans}
-  - ENTER
+  - ⏎
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - BRI DN
@@ -303,12 +328,12 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - BSPC
-  - SPACE
+  - ␣
   - {type: held}
   - {t: ▽, type: trans}
-  - ENTER
+  - ⏎
   - DEL
-  MOUSE:
+  "7 · MOUSE — 自動マウス層 · ボールを動かすと自動 / 500ms 静止で復帰":
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
@@ -327,9 +352,9 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - '&mkp MB1'
-  - '&mkp MB3'
-  - '&mkp MB2'
+  - 左
+  - 中
+  - 右
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
@@ -339,11 +364,9 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - '&mkp MB4'
+  - 戻る
   - {t: ▽, type: trans}
-  - '&mkp MB5'
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
+  - 進む
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
@@ -352,15 +375,17 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  BLE:
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  "8 · BLE — 接続と設定 · 英数+かな":
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - '&bt_mac0'
-  - '&bt_win1'
-  - '&bt_win2'
+  - {t: BT0, h: Mac}
+  - {t: BT1, h: Win}
+  - {t: BT2, h: Win}
   - {t: BT, h: '3'}
   - {t: BT, h: '4'}
   - {t: ▽, type: trans}
@@ -374,14 +399,14 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - '&studio_unlock'
+  - Studio解錠
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - '&bootloader'
+  - Boot
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
@@ -396,7 +421,7 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - BT CLR ALL
-  PAN:
+  "9 · PAN — パン (2Dスクロール) · P 長押し + ボール":
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
@@ -440,7 +465,7 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  SNAP-M:
+  "10 · SNAP-M — ウィンドウ整列 (Mac/Rectangle) · Q 長押し + ボール":
   - {type: held}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
@@ -484,7 +509,7 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  SNAP-W:
+  "11 · SNAP-W — ウィンドウ整列 (Win) · Q 長押し + ボール":
   - {type: held}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
@@ -528,7 +553,7 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  CURSOR:
+  "12 · CURSOR — 予約 (未使用)":
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
@@ -572,7 +597,7 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  CLICK:
+  "13 · CLICK — クリック層 · Del or caps 長押し":
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
@@ -584,35 +609,35 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - '&mkp MB1'
-  - '&mkp MB3'
-  - '&mkp MB2'
+  - 左
+  - 中
+  - 右
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - '&mkp MB1'
-  - '&mkp MB3'
-  - '&mkp MB2'
+  - 左
+  - 中
+  - 右
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - '&mkp MB4'
+  - 戻る
   - {t: ▽, type: trans}
-  - '&mkp MB5'
+  - 進む
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - 戻る
+  - {t: ▽, type: trans}
+  - 進む
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {type: held}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - '&mkp MB4'
-  - {t: ▽, type: trans}
-  - '&mkp MB5'
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}

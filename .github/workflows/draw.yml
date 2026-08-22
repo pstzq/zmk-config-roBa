@@ -8,10 +8,15 @@ on:
     branches: ["**"]
     paths:
       - "config/roBa.keymap"
+      - "config/jis.h"
       - "keymap_drawer.config.yaml"
       - "boards/shields/roBa/roBa.dtsi"
+      - "boards/shields/roBa/roBa_R.overlay"
+      - "scripts/drawer_enrich.py"
+      - "scripts/jis_relabel.py"
 
 jobs:
+  # US(ANSI)準拠の図を生成 (keymap-drawer/roBa.svg, roBa.yaml)
   draw:
     uses: caksoylar/keymap-drawer/.github/workflows/draw-zmk.yml@f9cf9d3677368a7fb1dc505c51b8156fafa66fe2
     permissions:
@@ -24,3 +29,80 @@ jobs:
       config_path: "keymap_drawer.config.yaml" # config file, ignored if not exists
       output_folder: "keymap-drawer"
       destination: "both"
+
+  # 生成された roBa.yaml に「コンボ」と「読める見出し」を足して描き直す。
+  #  - コンボ: zmk,combos から runtime-combo-defaults へ移行した結果、
+  #    keymap-drawer のパーサが拾えなくなったぶんを復元する
+  #  - 見出し: 層名だけだと役割と入り方が分からないので併記する
+  draw-enrich:
+    needs: draw
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install keymap-drawer
+        run: pip install keymap-drawer==0.21.0 pyyaml
+      - name: Enrich drawer YAML and redraw
+        run: |
+          python scripts/drawer_enrich.py config/roBa.keymap keymap-drawer/roBa.yaml
+          # -j/-l で物理レイアウトを明示する。YAML の `layout: {zmk_keyboard: roBa}`
+          # は外部データベースを引きにいくため、この単体実行では解決できない
+          # (本家の draw ジョブは json_path: config を渡すことで同じことをしている)
+          keymap -c keymap_drawer.config.yaml draw \
+            -j config/roBa.json -l default_layout \
+            keymap-drawer/roBa.yaml > keymap-drawer/roBa.svg
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add keymap-drawer/roBa.yaml keymap-drawer/roBa.svg
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "[Draw] コンボと見出しを図に反映"
+            git pull --rebase origin ${{ github.head_ref || github.ref_name }}
+            git push
+          fi
+
+  # 上で出力された roBa.yaml を JIS グリフに差し替えて JIS版図を生成
+  # (keymap-drawer/roBa_jis.svg)。keymap-drawer は US(ANSI)基準で描くので、
+  # JIS-OS 運用では記号が `Sft+1` `[` `INT1` のように出て読めない。
+  draw-jis:
+    needs: draw-enrich
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install keymap-drawer
+        run: pip install keymap-drawer==0.21.0 pyyaml
+      - name: Generate JIS keymap drawing
+        run: |
+          python scripts/jis_relabel.py keymap-drawer/roBa.yaml /tmp/roBa_jis.yaml
+          # -c を付けないと JIS 版だけ素のデフォルト描画になり、US版と見た目が揃わない
+          keymap -c keymap_drawer.config.yaml draw \
+            -j config/roBa.json -l default_layout \
+            /tmp/roBa_jis.yaml > keymap-drawer/roBa_jis.svg
+      - name: Commit JIS drawing
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add keymap-drawer/roBa_jis.svg
+          if git diff --cached --quiet; then
+            echo "No changes to JIS drawing."
+          else
+            git commit -m "[Draw] JIS版キーマップ図を更新"
+            git pull --rebase origin ${{ github.head_ref || github.ref_name }}
+            git push
+          fi

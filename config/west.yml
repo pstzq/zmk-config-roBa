@@ -1,16 +1,80 @@
 manifest:
   remotes:
-    - name: zmkfirmware
-      url-base: https://github.com/zmkfirmware
-    - name: kumamuk-git
+    - name: cormoran    # <-- DYA Studio (ZMKフォーク本体 + 各種モジュール)
+      url-base: https://github.com/cormoran
+    - name: kumamuk-git  # <-- roBa 本家 (現在は cormoran 版ドライバを使用)
       url-base: https://github.com/kumamuk-git
   projects:
+    # ── ZMK 本体 ────────────────────────────────────────────────
+    # DYA Studio のコンボ/マクロ編集は cormoran 氏の custom Studio RPC
+    # プロトコルを含む ZMK でしか動かない。`main+dya` はそれを内包する
+    # DYA 向けブランチ。ベースは ZMK v0.4 系 (Zephyr 4.1)。
+    #
+    # NOTE: 本家 kumamuk-git の dya-studio ブランチは v0.3-branch+dya 止まりで、
+    #       コンボ/マクロのランタイム編集は使えない。本構成は moNa2 と同じ
+    #       main+dya へ揃えている (SHA も moNa2 で動作確認済みのものを流用)。
     - name: zmk
-      remote: zmkfirmware
-      revision: v0.3-branch
+      remote: cormoran
+      revision: e5c9b6915b56   # main+dya @ 2026-08-12
       import: app/west.yml
-    - name: zmk-pmw3610-driver
-      remote: kumamuk-git
-      revision: main
+
+    # ── DYA Studio 共通基盤 ─────────────────────────────────────
+    # 設定の永続化レイヤ。runtime-combo / runtime-macro /
+    # runtime-input-processor が全てこの上に乗るため必須。
+    - name: zmk-feature-custom-settings
+      remote: cormoran
+      revision: c6a7fef3a3be   # main @ 2026-08-12
+    - name: zmk-module-ble-management
+      remote: cormoran
+      revision: 57738cc4fc6b   # main @ 2026-08-12
+    - name: zmk-module-settings-rpc
+      remote: cormoran
+      revision: 78f86df9e6c5   # main @ 2026-08-12
+    - name: zmk-module-runtime-input-processor
+      remote: cormoran
+      revision: 43618985f8c9   # main @ 2026-08-12
+
+    # ── コンボ / マクロのランタイム編集 (今回の主目的) ──────────
+    - name: zmk-feature-runtime-combo
+      remote: cormoran
+      revision: d9490e7b5d41   # main @ 2026-08-12
+    - name: zmk-feature-runtime-macro
+      remote: cormoran
+      revision: 38530962eb70   # main @ 2026-08-12
+
+    # ── DYA Studio 診断タブ ─────────────────────────────────────
+    - name: zmk-feature-kscan-diagnostics
+      remote: cormoran
+      revision: 1432f7fe0cfe   # main @ 2026-08-12
+    - name: zmk-feature-input-stream
+      remote: cormoran
+      revision: aeb015908a42   # main @ 2026-08-12
+    - name: zmk-module-devtool
+      remote: cormoran
+      revision: 9938a2c73c06   # main @ 2026-08-12
+    - name: zmk-feature-device-info
+      remote: cormoran
+      revision: 8cedd2dd9f04   # main @ 2026-08-12
+    - name: zmk-feature-watchdog
+      remote: cormoran
+      revision: 84ad14c6c364   # main @ 2026-08-12
+
+    # ── OS 判定 (Studio へのOS表示用) ───────────────────────────
+    # NOTE: zmk-feature-default-layer は入れていない。ベース層を書き換える
+    #       機構を2つ持つと競合するため (moNa2 で実際に問題になった)。
+    - name: zmk-feature-os-detection
+      remote: cormoran
+      revision: 3052679f645b   # main @ 2026-08-12
+
+    # ── トラックボール (PMW3610) ────────────────────────────────
+    # 本家は kumamuk-git/zmk-pmw3610-driver を使い、automouse-layer /
+    # scroll-layers を「ドライバの devicetree プロパティ」として持っていた
+    # (v0.3 方式)。v0.4 では Zephyr 4.1 が純正 "pixart,pmw3610" を取り込んで
+    # compatible が衝突するため、cormoran 氏の custom Studio RPC 対応版へ移行し
+    # compatible は "cormoran,pmw3610" になる。
+    # 併せて automouse / scroll は入力リスナー側の input-processors へ移る。
+    - name: zmk-driver-pmw3610-with-custom-studio-rpc
+      remote: cormoran
+      revision: 5c34ea0eec24   # main @ 2026-08-12
   self:
     path: config

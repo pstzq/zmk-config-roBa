@@ -1,4 +1,11 @@
 #include "roBa.dtsi"
+// runtime-input-processor.dtsi は必ず roBa.dtsi の「後ろ」で include すること。
+// 同 dtsi は modifiers.h 経由で RC(keycode) を1引数マクロとして再定義し、
+// roBa.dtsi のマトリクス RC(row,col) と衝突する。
+#include <input/processors/runtime-input-processor.dtsi>
+#include <input/processors.dtsi>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <dt-bindings/zmk/input_transform.h>
 
 &default_transform {
     col-offset = <6>;
@@ -19,7 +26,42 @@
         status = "okay";
         compatible = "zmk,input-listener";
         device = <&trackball>;
+
+        // 本家(v0.3)はドライバの automouse-layer / scroll-layers プロパティで
+        // 実現していたが、cormoran 版ドライバにその機能は無い。
+        // v0.4 の入力プロセッサへ移し替えている。
+        //
+        // 通常時: カーソル移動。ボールを動かすと MOUSE 層(4)を一時有効化
+        //   (= 旧 automouse-layer = <4> と CONFIG_PMW3610_AUTOMOUSE_TIMEOUT_MS=700)
+        input-processors = <&mouse_runtime_input_processor &zip_temp_layer 4 700>;
+
+        // SCROLL 層(5)ではカーソル移動ではなくスクロールにする
+        //   (= 旧 scroll-layers = <5>)
+        scroller {
+            layers = <5>;
+            input-processors =
+                <&zip_xy_to_scroll_mapper
+                 &zip_scroll_transform INPUT_TRANSFORM_X_INVERT
+                 &zip_scroll_scaler 1 16
+                 &scroll_runtime_input_processor>;
+            // scaler 1/16 は旧 CONFIG_PMW3610_SCROLL_TICK=16 に対応する値。
+            // X反転は旧 CONFIG_PMW3610_INVERT_SCROLL_X=y に対応。
+            // 速度は DYA Studio のトラックボールタブから実行時に調整できる。
+        };
     };
+};
+
+// スクロール用 runtime input processor の初期倍率を 1/1 にする。
+// モジュール既定は 1/60 で、そのままだと実効が 1/16 x 1/60 = 1/960 になり
+// 「何をしても鈍い」状態になる (moNa2 で実際にこれに嵌った)。
+// 固定減速は上の zip_scroll_scaler に一本化し、ここは
+// 「Studio の表示倍率 = 実効倍率」に揃える。
+//
+// 注意: これは "Initial" 値。一度 Studio で保存すると以後はフラッシュ側が
+// 優先されるため、焼き直してもスライダーは前の値のまま。
+&scroll_runtime_input_processor {
+    scale-multiplier = <1>;
+    scale-divisor = <1>;
 };
 
 &pinctrl {
@@ -53,9 +95,23 @@
 
     trackball: trackball@0 {
         status = "okay";
-        compatible = "pixart,pmw3610";
+        // ZMK v0.4 (Zephyr 4.1) が純正 "pixart,pmw3610" ドライバを取り込んだため、
+        // 旧 compatible は衝突して使えない。cormoran 氏の custom Studio RPC 対応版
+        // (compatible = "cormoran,pmw3610") へ移行した。
+        compatible = "cormoran,pmw3610";
         reg = <0>;
         spi-max-frequency = <2000000>;
         irq-gpios = <&gpio0 2 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        // 旧 CONFIG_PMW3610_CPI=400 はここへ移った
+        cpi = <400>;
+        evt-type = <INPUT_EV_REL>;
+        x-input-code = <INPUT_REL_X>;
+        y-input-code = <INPUT_REL_Y>;
+        // DYA Studio 上でこのセンサーを識別するための短い ID
+        settings-id = "tball";
+        // 軸の向きは CONFIG_PMW3610_INVERT_X / _INVERT_Y (roBa_R.conf) で指定する。
+        // 旧構成の CONFIG_PMW3610_ORIENTATION_180 に相当するものが無いため、
+        // 本家 dya-studio ブランチの実機検証に倣って INVERT_Y のみ有効にしている。
+        // ★実機で向きが違ったらここが最初の調整箇所★
     };
 };

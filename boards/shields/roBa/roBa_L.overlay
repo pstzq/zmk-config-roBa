@@ -1,4 +1,9 @@
 #include "roBa.dtsi"
+// 左手にトラックボールは無いが、このモジュールの dtsi を include しないと
+// /runtime_input_processor が空ノード扱いになりビルドが processor-label で落ちる。
+// roBa.dtsi の後ろに置くこと: 同 dtsi は modifiers.h 経由で RC(keycode) を
+// 1引数マクロとして再定義し、マトリクスの RC(row,col) と衝突するため。
+#include <input/processors/runtime-input-processor.dtsi>
 
 &kscan0 {
         col-gpios

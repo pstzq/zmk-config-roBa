@@ -1,5 +1,13 @@
-on: [push, pull_request, workflow_dispatch]
+# NOTE: `on: [push]` と書くとタグの push にも反応する。ブランチに限定する。
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
-    uses: zmkfirmware/zmk/.github/workflows/build-user-config.yml@v0.3-branch
+    # config/west.yml の zmk と同じ SHA に揃えること (main+dya @ 2026-08-12)。
+    # main+dya はリリース線ではなく開発本流なので、浮動参照にすると
+    # 何もしていないのにビルドが壊れる。更新時はこの2箇所を同時に変更する。
+    uses: cormoran/zmk/.github/workflows/build-user-config.yml@e5c9b6915b56801193e359dd9bad4a167ce0d1b8

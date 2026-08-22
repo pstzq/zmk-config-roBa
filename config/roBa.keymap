@@ -8,22 +8,12 @@
     quick-tap-ms = <0>;
 };
 
-&trackball {
-    automouse-layer = <4>;
-    scroll-layers = <5>;
-
-    // arrows {
-    //     layers = <3>;
-    //     bindings =
-    //         <&kp RIGHT_ARROW>,
-    //         <&kp LEFT_ARROW>,
-    //         <&kp UP_ARROW>,
-    //         <&kp DOWN_ARROW>;
-    //     tick = <10>;
-    //     wait-ms = <5>;
-    //     tap-ms = <5>;
-    // };
-};
+// NOTE: 旧構成にあった `&trackball { automouse-layer; scroll-layers; }` は削除した。
+// これらは kumamuk-git 版 PMW3610 ドライバ固有の devicetree プロパティで、
+// cormoran 版には存在しないため残すとビルドが落ちる。
+// 同じ機能は boards/shields/roBa/roBa_R.overlay の入力プロセッサへ移した:
+//   automouse-layer = <4> -> &zip_temp_layer 4 700
+//   scroll-layers   = <5> -> trackball_listener の scroller { layers = <5>; }
 
 / {
     combos {

@@ -33,6 +33,12 @@ manifest:
     - name: zmk-module-runtime-input-processor
       remote: cormoran
       revision: 43618985f8c9   # main @ 2026-08-12
+    # 左手ホイールの「回転」割当を DYA Studio から変更できるようにする。
+    # ZMK Studio は sensor-bindings を編集対象に出さないため、これが無いと
+    # ホイールの回転はコンパイル時固定になり Studio から一切触れない。
+    - name: zmk-behavior-runtime-sensor-rotate
+      remote: cormoran
+      revision: 8b1125ed676c   # main @ 2026-08-12
 
     # ── コンボ / マクロのランタイム編集 (今回の主目的) ──────────
     - name: zmk-feature-runtime-combo

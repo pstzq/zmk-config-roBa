@@ -292,13 +292,15 @@
         //   (&msc は press で速度を加算・release で減算する実装のため)。
         //   -> tick を 8ms に細かくし、速度を明示して1ノッチ=約3行に固定、
         //      tap-ms は queue を溢れさせない短さにする。
-        //   量を変えたいときは下の 100 を増減する (100 で約3行/ノッチ)。
+        //   量を変えたいときは下の 300 を増減する (300 で約10行/ノッチ)。
         scroll_up_down: scroll_up_down {
             compatible = "zmk,behavior-runtime-sensor-rotate";
             #sensor-binding-cells = <0>;
-            cw-binding = <&msc MOVE_Y(-100)>;   // 手前に回す = 下スクロール
-            ccw-binding = <&msc MOVE_Y(100)>;   // 奥に回す   = 上スクロール
-            // 32ms = 8ms tick x 約4回。1ノッチ 0.8行 x 4 = 約3行。
+            cw-binding = <&msc MOVE_Y(-300)>;   // 手前に回す = 下スクロール
+            ccw-binding = <&msc MOVE_Y(300)>;   // 奥に回す   = 上スクロール
+            // 32ms = 8ms tick x 約4回。1トリガ 2.4行 x 4 = 約10行。
+            // 100 -> 300 は steps を 12 -> 48 に直してトリガ数が 1/4 に
+            // なったぶんの相殺 (1ノッチあたりの総量は据え置き)。
             // ここを伸ばすと queue 占有が延びて「入りっぱなし」が再発する
             tap-ms = <32>;
         };

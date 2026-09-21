@@ -32,3 +32,19 @@ include:
   - board: xiao_ble/nrf52840/zmk
     shield: settings_reset
     artifact-name: settings_reset
+
+  # 診断用。roBa_R と中身は同じだが、ログ用の CDC ACM をもう1本生やして
+  # Studio サブシステムのログを DEBUG で出す。Studio の接続失敗のように
+  # 「何が起きているか分からない」ときだけ焼くこと (常用しない)。
+  #
+  # 焼くと OS にシリアルポートが2本見える:
+  #   1本目 = Studio RPC (Web アプリから選ぶ方)
+  #   2本目 = ログ (screen/teraterm 等で開く方。ボーレートは何でもよい)
+  # どちらがどちらかは、ログ側を開いて起動メッセージが流れる方で判別する。
+  #
+  # snippet: は再利用ワークフローが -S "..." と1個しか渡せないため、
+  # 2つ使うときは cmake の SNIPPET 変数へ直接渡す。
+  - board: xiao_ble/nrf52840/zmk
+    shield: roBa_R
+    cmake-args: '-DSNIPPET="studio-rpc-usb-uart;zmk-usb-logging" -DCONFIG_ZMK_STUDIO_LOG_LEVEL_DBG=y'
+    artifact-name: roBa_R_logging

@@ -135,14 +135,26 @@
     scale-divisor = <1>;
 };
 
-// オートマウスレイヤー(AML)の暴発対策。moNa2 の値をキー位置シフト規則
-// (moNa2 の i -> roBa の i<15 ? i : i+1) で移してある:
-//   moNa2 <0 10 17 18 19 21 29 31> -> roBa <0 10 18 19 20 22 30 32>
-// = Q / A / J K L / X / M . 。これらを押している間はボールが動いても
-// MOUSE 層へ移行しない。
+// オートマウスレイヤー(AML)の暴発対策。
+//
+// excluded-positions の意味に注意: ZMK の実装
+// (input_processor_temp_layer.c / handle_position_state_changed) では
+// 「押しても AML を解除しないキー」であって、「押している間 AML へ移行
+// しないキー」ではない。除外されていないキーを押すと AML は即解除される。
+// したがってここに載せるべきは MOUSE 層で実際に機能を持つキーだけ:
+//   18 19 20 = J K L (&mkp MB1/MB3/MB2)
+//   30 32    = M .   (&mkp MB4/MB5)
+// moNa2 から移した際に一緒に来ていた 0 / 10 / 22 (Q / A / X) は MOUSE 層で
+// &trans なので守る必要がなく、むしろ誤発火した AML を次の打鍵で解除する
+// 機会を潰していた (特に A は頻出)。外してある。
 &zip_temp_layer {
-    excluded-positions = <0 10 18 19 20 22 30 32>;
-    require-prior-idle-ms = <500>;  // 打鍵直後この時間はAMLを起こさない
+    excluded-positions = <18 19 20 30 32>;
+    // 打鍵からこの時間は AML を起こさない。右手のタイピング振動で
+    // トラックボールが反応して AML が入るのを抑えるため 500 -> 1000。
+    // 止まるのはレイヤー切替だけで、カーソル移動は素通りする
+    // (temp_layer はイベントをそのまま CONTINUE する) ため、打鍵直後でも
+    // ボールでカーソルは動く。おあずけになるのはクリック層だけ。
+    require-prior-idle-ms = <1000>;
 };
 
 &pinctrl {

@@ -106,6 +106,11 @@ scaler には端数を蓄積する仕組みが無いため、後ろに置くと�
 
 を実行時に編集できる。
 
+> **Studio は施錠された状態で起動する。** BLE 層の `&studio_unlock` で解錠する
+> こと (`CONFIG_ZMK_STUDIO_LOCKING=y`)。本家 roBa は `n` だが、`n` にすると
+> 解錠時の directed advertising が無効になり、**BLE では Web Bluetooth の
+> デバイス選択リストに出てこなくなる**ので継承しないこと。
+
 > **キーマップ / コンボ / マクロのタブは USB 接続で開くこと。**
 > BLE でも接続自体はできるが、物理レイアウトや多層キーマップのような
 > 大きい RPC ペイロードが時間切れになり "Operation timed out" になる。

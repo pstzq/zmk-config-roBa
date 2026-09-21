@@ -137,3 +137,4 @@ Actions の成果物 (`roBa_R` / `roBa_L` / `settings_reset`) を使う。
 | `keymap_drawer.config.yaml` | 図の描画設定 |
 | `scripts/drawer_enrich.py` | 図にコンボと読める見出しを注入 |
 | `scripts/jis_relabel.py` | 図のラベルを JIS グリフへ差し替え |
+| `docs/CHANGELOG.md` | 移植と実機検証の顛末・既知の制約・調整ポイント早見表 |

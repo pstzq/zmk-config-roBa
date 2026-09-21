@@ -68,25 +68,25 @@ text.footer {
 }
 
 /* styling for combo tap, and key non-tap label text */
-text.combo, text.hold, text.shifted, text.left, text.right {
+text.combo, text.hold, text.shifted, text.left, text.right, text.tl, text.tr, text.bl, text.br {
     font-size: 11px;
 }
 
-text.hold {
+text.hold, text.bl, text.br {
     text-anchor: middle;
     dominant-baseline: auto;
 }
 
-text.shifted {
+text.shifted, text.tl, text.tr {
     text-anchor: middle;
     dominant-baseline: hanging;
 }
 
-text.left {
+text.left, text.tl, text.bl {
     text-anchor: start;
 }
 
-text.right {
+text.right, text.tr, text.br {
     text-anchor: end;
 }
 
@@ -146,15 +146,16 @@ text.hold { opacity: 0.78; }
 /* 万一 footer を使うことがあっても暴れないように保険をかけておく */
 text.footer { font-size: 13px; stroke: none; }
 </style>
-<g transform="translate(30, 0)" class="layer-0 · MAC — ベース (Mac)">
-<text x="0" y="28" class="label" id="MAC---Mac">0 · MAC — ベース (Mac):</text>
+<g transform="translate(30, 0)" class="layer-MAC">
+<text x="0" y="28" class="label" id="MAC">MAC:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">Q</text>
-<text x="0" y="24" class="key hold">SNAP-M</text>
-</g>
+<a href="#SNAP-M">
+<text x="0" y="24" class="key hold layer-activator">SNAP-M</text>
+</a></g>
 <g transform="translate(87, 43)" class="key keypos-1">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
@@ -199,8 +200,9 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">P</text>
-<text x="0" y="24" class="key hold">PAN</text>
-</g>
+<a href="#PAN">
+<text x="0" y="24" class="key hold layer-activator">PAN</text>
+</a></g>
 <g transform="translate(29, 123)" class="key keypos-10">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
@@ -292,15 +294,16 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-1.25em">Caps</tspan><tspan x="0" dy="1.25em">Word</tspan>
+<tspan x="0" dy="-0.94em">Caps</tspan><tspan x="0" dy="1.25em">Word</tspan>
 </text>
-<text x="0" y="24" class="key hold">CLICK</text>
-</g>
+<a href="#CLICK">
+<text x="0" y="24" class="key hold layer-activator">CLICK</text>
+</a></g>
 <g transform="translate(464, 174)" class="key keypos-28">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">Sft+</tspan><tspan x="0" dy="1.25em">INT1</tspan>
+<tspan x="0" dy="-0.62em">Sft+</tspan><tspan x="0" dy="1.25em">INT1</tspan>
 </text>
 </g>
 <g transform="translate(522, 161)" class="key keypos-29">
@@ -354,73 +357,49 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">␣</text>
-<text x="0" y="24" class="key hold">SYM</text>
-</g>
+<a href="#SYM">
+<text x="0" y="24" class="key hold layer-activator">SYM</text>
+</a></g>
 <g transform="translate(345, 256) rotate(20.0)" class="key keypos-39">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">LANG2</text>
-<text x="0" y="24" class="key hold">NAV-M</text>
-</g>
+<a href="#NAV-M">
+<text x="0" y="24" class="key hold layer-activator">NAV-M</text>
+</a></g>
 <g transform="translate(438, 256) rotate(-20.0)" class="key keypos-40">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">LANG1</text>
-<text x="0" y="24" class="key hold">NAV-M</text>
-</g>
+<a href="#NAV-M">
+<text x="0" y="24" class="key hold layer-activator">NAV-M</text>
+</a></g>
 <g transform="translate(502, 239) rotate(-10.0)" class="key keypos-41">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">⏎</text>
-<text x="0" y="24" class="key hold">NUM</text>
-</g>
+<a href="#NUM">
+<text x="0" y="24" class="key hold layer-activator">NUM</text>
+</a></g>
 <g transform="translate(755, 239)" class="key keypos-42">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">DEL</text>
-<text x="0" y="24" class="key hold">CLICK</text>
-</g>
-<g class="combo combopos-0">
-<rect rx="9" ry="9" x="100" y="80" width="32" height="28" class="combo"/>
-<text x="116" y="94" class="combo tap">TAB</text>
-</g>
-<g class="combo combopos-1">
-<rect rx="9" ry="9" x="158" y="77" width="32" height="28" class="combo"/>
-<text x="174" y="91" class="combo tap">
-<tspan x="174" dy="-0.625em">Sft+</tspan><tspan x="174" dy="1.25em">TAB</tspan>
-</text>
-</g>
-<g class="combo combopos-2">
-<rect rx="9" ry="9" x="376" y="242" width="32" height="28" class="combo"/>
-<text x="392" y="256" class="combo tap">ESC</text>
-<text x="392" y="268" class="combo hold">BLE</text>
-</g>
-<g class="combo combopos-3">
-<rect rx="9" ry="9" x="593" y="77" width="32" height="28" class="combo"/>
-<text x="609" y="91" class="combo tap">Gui+C</text>
-</g>
-<g class="combo combopos-4">
-<rect rx="9" ry="9" x="652" y="80" width="32" height="28" class="combo"/>
-<text x="668" y="94" class="combo tap">Gui+V</text>
-</g>
-<g class="combo combopos-5">
-<path d="M392,65 l-344,0" class="combo"/>
-<path d="M392,65 l344,0" class="combo"/>
-<rect rx="9" ry="9" x="376" y="51" width="32" height="28" class="combo"/>
-<text x="392" y="65" class="combo tap">O24</text>
-<text x="392" y="77" class="combo hold">toggle</text>
+<a href="#CLICK">
+<text x="0" y="24" class="key hold layer-activator">CLICK</text>
+</a></g>
 </g>
 </g>
-</g>
-<g transform="translate(874, 0)" class="layer-1 · WIN — ベース (Windows)">
-<text x="0" y="28" class="label" id="WIN---Windows">1 · WIN — ベース (Windows):</text>
+<g transform="translate(874, 0)" class="layer-WIN">
+<text x="0" y="28" class="label" id="WIN">WIN:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">Q</text>
-<text x="0" y="24" class="key hold">SNAP-W</text>
-</g>
+<a href="#SNAP-W">
+<text x="0" y="24" class="key hold layer-activator">SNAP-W</text>
+</a></g>
 <g transform="translate(87, 43)" class="key keypos-1">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
@@ -465,8 +444,9 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">P</text>
-<text x="0" y="24" class="key hold">PAN</text>
-</g>
+<a href="#PAN">
+<text x="0" y="24" class="key hold layer-activator">PAN</text>
+</a></g>
 <g transform="translate(29, 123)" class="key keypos-10">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
@@ -558,15 +538,16 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-1.25em">Caps</tspan><tspan x="0" dy="1.25em">Word</tspan>
+<tspan x="0" dy="-0.94em">Caps</tspan><tspan x="0" dy="1.25em">Word</tspan>
 </text>
-<text x="0" y="24" class="key hold">CLICK</text>
-</g>
+<a href="#CLICK">
+<text x="0" y="24" class="key hold layer-activator">CLICK</text>
+</a></g>
 <g transform="translate(464, 174)" class="key keypos-28">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">Sft+</tspan><tspan x="0" dy="1.25em">INT1</tspan>
+<tspan x="0" dy="-0.62em">Sft+</tspan><tspan x="0" dy="1.25em">INT1</tspan>
 </text>
 </g>
 <g transform="translate(522, 161)" class="key keypos-29">
@@ -620,66 +601,41 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">␣</text>
-<text x="0" y="24" class="key hold">SYM</text>
-</g>
+<a href="#SYM">
+<text x="0" y="24" class="key hold layer-activator">SYM</text>
+</a></g>
 <g transform="translate(345, 256) rotate(20.0)" class="key keypos-39">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">LANG2</text>
-<text x="0" y="24" class="key hold">NAV-W</text>
-</g>
+<a href="#NAV-W">
+<text x="0" y="24" class="key hold layer-activator">NAV-W</text>
+</a></g>
 <g transform="translate(438, 256) rotate(-20.0)" class="key keypos-40">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">LANG1</text>
-<text x="0" y="24" class="key hold">NAV-W</text>
-</g>
+<a href="#NAV-W">
+<text x="0" y="24" class="key hold layer-activator">NAV-W</text>
+</a></g>
 <g transform="translate(502, 239) rotate(-10.0)" class="key keypos-41">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">⏎</text>
-<text x="0" y="24" class="key hold">NUM</text>
-</g>
+<a href="#NUM">
+<text x="0" y="24" class="key hold layer-activator">NUM</text>
+</a></g>
 <g transform="translate(755, 239)" class="key keypos-42">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">DEL</text>
-<text x="0" y="24" class="key hold">CLICK</text>
-</g>
-<g class="combo combopos-0">
-<rect rx="9" ry="9" x="100" y="80" width="32" height="28" class="combo"/>
-<text x="116" y="94" class="combo tap">TAB</text>
-</g>
-<g class="combo combopos-1">
-<rect rx="9" ry="9" x="158" y="77" width="32" height="28" class="combo"/>
-<text x="174" y="91" class="combo tap">
-<tspan x="174" dy="-0.625em">Sft+</tspan><tspan x="174" dy="1.25em">TAB</tspan>
-</text>
-</g>
-<g class="combo combopos-2">
-<rect rx="9" ry="9" x="376" y="242" width="32" height="28" class="combo"/>
-<text x="392" y="256" class="combo tap">ESC</text>
-<text x="392" y="268" class="combo hold">BLE</text>
-</g>
-<g class="combo combopos-3">
-<rect rx="9" ry="9" x="593" y="77" width="32" height="28" class="combo"/>
-<text x="609" y="91" class="combo tap">Ctl+C</text>
-</g>
-<g class="combo combopos-4">
-<rect rx="9" ry="9" x="652" y="80" width="32" height="28" class="combo"/>
-<text x="668" y="94" class="combo tap">Ctl+V</text>
-</g>
-<g class="combo combopos-5">
-<path d="M392,65 l-344,0" class="combo"/>
-<path d="M392,65 l344,0" class="combo"/>
-<rect rx="9" ry="9" x="376" y="51" width="32" height="28" class="combo"/>
-<text x="392" y="65" class="combo tap">O24</text>
-<text x="392" y="77" class="combo hold">toggle</text>
+<a href="#CLICK">
+<text x="0" y="24" class="key hold layer-activator">CLICK</text>
+</a></g>
 </g>
 </g>
-</g>
-<g transform="translate(30, 349)" class="layer-2 · O24 — 代替配列 · Q+P でトグル">
-<text x="0" y="28" class="label" id="O24----QP-">2 · O24 — 代替配列 · Q+P でトグル:</text>
+<g transform="translate(30, 349)" class="layer-O24">
+<text x="0" y="28" class="label" id="O24">O24:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
@@ -896,22 +852,10 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key trans"/>
 <text x="0" y="-4" class="key trans tap">▽</text>
 </g>
-<g class="combo combopos-0">
-<rect rx="9" ry="9" x="376" y="242" width="32" height="28" class="combo"/>
-<text x="392" y="256" class="combo tap">ESC</text>
-<text x="392" y="268" class="combo hold">BLE</text>
-</g>
-<g class="combo combopos-1">
-<path d="M392,65 l-344,0" class="combo"/>
-<path d="M392,65 l344,0" class="combo"/>
-<rect rx="9" ry="9" x="376" y="51" width="32" height="28" class="combo"/>
-<text x="392" y="65" class="combo tap">O24</text>
-<text x="392" y="77" class="combo hold">toggle</text>
 </g>
 </g>
-</g>
-<g transform="translate(874, 349)" class="layer-3 · SYM — 記号 · Space 長押し">
-<text x="0" y="28" class="label" id="SYM----Space-">3 · SYM — 記号 · Space 長押し:</text>
+<g transform="translate(874, 349)" class="layer-SYM">
+<text x="0" y="28" class="label" id="SYM">SYM:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
@@ -962,7 +906,7 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">Sft+</tspan><tspan x="0" dy="1.25em">INT3</tspan>
+<tspan x="0" dy="-0.62em">Sft+</tspan><tspan x="0" dy="1.25em">INT3</tspan>
 </text>
 </g>
 <g transform="translate(29, 123)" class="key keypos-10">
@@ -1131,8 +1075,8 @@ text.footer { font-size: 13px; stroke: none; }
 </g>
 </g>
 </g>
-<g transform="translate(30, 698)" class="layer-4 · NUM — 数字 · Enter 長押し">
-<text x="0" y="28" class="label" id="NUM----Enter-">4 · NUM — 数字 · Enter 長押し:</text>
+<g transform="translate(30, 698)" class="layer-NUM">
+<text x="0" y="28" class="label" id="NUM">NUM:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
@@ -1351,8 +1295,8 @@ text.footer { font-size: 13px; stroke: none; }
 </g>
 </g>
 </g>
-<g transform="translate(874, 698)" class="layer-5 · NAV-M — 矢印/ナビ (Mac) · 英数 or かな 長押し">
-<text x="0" y="28" class="label" id="NAV-M---Mac---or--">5 · NAV-M — 矢印/ナビ (Mac) · 英数 or かな 長押し:</text>
+<g transform="translate(874, 698)" class="layer-NAV-M">
+<text x="0" y="28" class="label" id="NAV-M">NAV-M:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
@@ -1398,14 +1342,14 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">Gui+</tspan><tspan x="0" dy="1.25em">Sft+4</tspan>
+<tspan x="0" dy="-0.62em">Gui+</tspan><tspan x="0" dy="1.25em">Sft+4</tspan>
 </text>
 </g>
 <g transform="translate(755, 65)" class="key keypos-9">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">Gui+</tspan><tspan x="0" dy="1.25em">Sft+3</tspan>
+<tspan x="0" dy="-0.62em">Gui+</tspan><tspan x="0" dy="1.25em">Sft+3</tspan>
 </text>
 </g>
 <g transform="translate(29, 123)" class="key keypos-10">
@@ -1477,14 +1421,14 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">PG</tspan><tspan x="0" dy="1.25em">UP</tspan>
+<tspan x="0" dy="-0.62em">PG</tspan><tspan x="0" dy="1.25em">UP</tspan>
 </text>
 </g>
 <g transform="translate(145, 145)" class="key keypos-24">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">PG</tspan><tspan x="0" dy="1.25em">DN</tspan>
+<tspan x="0" dy="-0.62em">PG</tspan><tspan x="0" dy="1.25em">DN</tspan>
 </text>
 </g>
 <g transform="translate(203, 153)" class="key trans keypos-25">
@@ -1511,7 +1455,7 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">BRI</tspan><tspan x="0" dy="1.25em">DN</tspan>
+<tspan x="0" dy="-0.62em">BRI</tspan><tspan x="0" dy="1.25em">DN</tspan>
 </text>
 </g>
 <g transform="translate(580, 153)" class="key keypos-30">
@@ -1533,7 +1477,7 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">BRI</tspan><tspan x="0" dy="1.25em">UP</tspan>
+<tspan x="0" dy="-0.62em">BRI</tspan><tspan x="0" dy="1.25em">UP</tspan>
 </text>
 </g>
 <g transform="translate(29, 239)" class="key trans keypos-34">
@@ -1582,8 +1526,8 @@ text.footer { font-size: 13px; stroke: none; }
 </g>
 </g>
 </g>
-<g transform="translate(30, 1047)" class="layer-6 · NAV-W — 矢印/ナビ (Win) · 英数 or かな 長押し">
-<text x="0" y="28" class="label" id="NAV-W---Win---or--">6 · NAV-W — 矢印/ナビ (Win) · 英数 or かな 長押し:</text>
+<g transform="translate(30, 1047)" class="layer-NAV-W">
+<text x="0" y="28" class="label" id="NAV-W">NAV-W:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
@@ -1619,7 +1563,7 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">Alt+</tspan><tspan x="0" dy="1.25em">PrtSc</tspan>
+<tspan x="0" dy="-0.62em">Alt+</tspan><tspan x="0" dy="1.25em">PrtSc</tspan>
 </text>
 </g>
 <g transform="translate(639, 29)" class="key keypos-7">
@@ -1631,7 +1575,7 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">Gui+</tspan><tspan x="0" dy="1.25em">Sft+S</tspan>
+<tspan x="0" dy="-0.62em">Gui+</tspan><tspan x="0" dy="1.25em">Sft+S</tspan>
 </text>
 </g>
 <g transform="translate(755, 65)" class="key keypos-9">
@@ -1708,14 +1652,14 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">PG</tspan><tspan x="0" dy="1.25em">UP</tspan>
+<tspan x="0" dy="-0.62em">PG</tspan><tspan x="0" dy="1.25em">UP</tspan>
 </text>
 </g>
 <g transform="translate(145, 145)" class="key keypos-24">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">PG</tspan><tspan x="0" dy="1.25em">DN</tspan>
+<tspan x="0" dy="-0.62em">PG</tspan><tspan x="0" dy="1.25em">DN</tspan>
 </text>
 </g>
 <g transform="translate(203, 153)" class="key trans keypos-25">
@@ -1742,7 +1686,7 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">BRI</tspan><tspan x="0" dy="1.25em">DN</tspan>
+<tspan x="0" dy="-0.62em">BRI</tspan><tspan x="0" dy="1.25em">DN</tspan>
 </text>
 </g>
 <g transform="translate(580, 153)" class="key keypos-30">
@@ -1764,7 +1708,7 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">BRI</tspan><tspan x="0" dy="1.25em">UP</tspan>
+<tspan x="0" dy="-0.62em">BRI</tspan><tspan x="0" dy="1.25em">UP</tspan>
 </text>
 </g>
 <g transform="translate(29, 239)" class="key trans keypos-34">
@@ -1813,8 +1757,8 @@ text.footer { font-size: 13px; stroke: none; }
 </g>
 </g>
 </g>
-<g transform="translate(874, 1047)" class="layer-7 · MOUSE — 自動マウス層 · ボールを動かすと自動 / 500ms 静止で復帰">
-<text x="0" y="28" class="label" id="MOUSE------500ms-">7 · MOUSE — 自動マウス層 · ボールを動かすと自動 / 500ms 静止で復帰:</text>
+<g transform="translate(874, 1047)" class="layer-MOUSE">
+<text x="0" y="28" class="label" id="MOUSE">MOUSE:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key trans keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key trans side"/>
@@ -2033,8 +1977,8 @@ text.footer { font-size: 13px; stroke: none; }
 </g>
 </g>
 </g>
-<g transform="translate(30, 1396)" class="layer-8 · BLE — 接続と設定 · 英数+かな">
-<text x="0" y="28" class="label" id="BLE----">8 · BLE — 接続と設定 · 英数+かな:</text>
+<g transform="translate(30, 1396)" class="layer-BLE">
+<text x="0" y="28" class="label" id="BLE">BLE:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key trans keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key trans side"/>
@@ -2130,7 +2074,7 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">OUT</tspan><tspan x="0" dy="1.25em">TOG</tspan>
+<tspan x="0" dy="-0.62em">OUT</tspan><tspan x="0" dy="1.25em">TOG</tspan>
 </text>
 </g>
 <g transform="translate(580, 95)" class="key trans keypos-18">
@@ -2212,7 +2156,7 @@ text.footer { font-size: 13px; stroke: none; }
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key side"/>
 <rect rx="4" ry="4" x="-20" y="-24" width="40" height="40" class="key"/>
 <text x="0" y="-4" class="key tap">
-<tspan x="0" dy="-0.625em">BT</tspan><tspan x="0" dy="1.25em">CLR</tspan>
+<tspan x="0" dy="-0.62em">BT</tspan><tspan x="0" dy="1.25em">CLR</tspan>
 </text>
 </g>
 <g transform="translate(29, 239)" class="key trans keypos-34">
@@ -2264,8 +2208,8 @@ text.footer { font-size: 13px; stroke: none; }
 </g>
 </g>
 </g>
-<g transform="translate(874, 1396)" class="layer-9 · PAN — パン (2Dスクロール) · P 長押し + ボール">
-<text x="0" y="28" class="label" id="PAN---2D--P---">9 · PAN — パン (2Dスクロール) · P 長押し + ボール:</text>
+<g transform="translate(874, 1396)" class="layer-PAN">
+<text x="0" y="28" class="label" id="PAN">PAN:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key trans keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key trans side"/>
@@ -2483,8 +2427,8 @@ text.footer { font-size: 13px; stroke: none; }
 </g>
 </g>
 </g>
-<g transform="translate(30, 1745)" class="layer-10 · SNAP-M — ウィンドウ整列 (Mac/Rectangle) · Q 長押し + ボール">
-<text x="0" y="28" class="label" id="SNAP-M---MacRectangle--Q---">10 · SNAP-M — ウィンドウ整列 (Mac/Rectangle) · Q 長押し + ボール:</text>
+<g transform="translate(30, 1745)" class="layer-SNAP-M">
+<text x="0" y="28" class="label" id="SNAP-M">SNAP-M:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key held keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key held side"/>
@@ -2702,8 +2646,8 @@ text.footer { font-size: 13px; stroke: none; }
 </g>
 </g>
 </g>
-<g transform="translate(874, 1745)" class="layer-11 · SNAP-W — ウィンドウ整列 (Win) · Q 長押し + ボール">
-<text x="0" y="28" class="label" id="SNAP-W---Win--Q---">11 · SNAP-W — ウィンドウ整列 (Win) · Q 長押し + ボール:</text>
+<g transform="translate(874, 1745)" class="layer-SNAP-W">
+<text x="0" y="28" class="label" id="SNAP-W">SNAP-W:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key held keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key held side"/>
@@ -2921,8 +2865,8 @@ text.footer { font-size: 13px; stroke: none; }
 </g>
 </g>
 </g>
-<g transform="translate(30, 2094)" class="layer-12 · CURSOR — 予約 (未使用)">
-<text x="0" y="28" class="label" id="CURSOR---">12 · CURSOR — 予約 (未使用):</text>
+<g transform="translate(30, 2094)" class="layer-CURSOR">
+<text x="0" y="28" class="label" id="CURSOR">CURSOR:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key trans keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key trans side"/>
@@ -3141,8 +3085,8 @@ text.footer { font-size: 13px; stroke: none; }
 </g>
 </g>
 </g>
-<g transform="translate(874, 2094)" class="layer-13 · CLICK — クリック層 · Del or caps 長押し">
-<text x="0" y="28" class="label" id="CLICK----Del-or-caps-">13 · CLICK — クリック層 · Del or caps 長押し:</text>
+<g transform="translate(874, 2094)" class="layer-CLICK">
+<text x="0" y="28" class="label" id="CLICK">CLICK:</text>
 <g transform="translate(0, 56)">
 <g transform="translate(29, 65)" class="key trans keypos-0">
 <rect rx="9" ry="9" x="-26" y="-26" width="52" height="52" class="key trans side"/>

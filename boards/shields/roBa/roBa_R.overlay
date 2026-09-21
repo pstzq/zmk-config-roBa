@@ -61,12 +61,16 @@
                 <&zip_xy_to_scroll_mapper
                  &zip_scroll_transform INPUT_TRANSFORM_X_INVERT
                  &inertial_scroll
-                 &zip_scroll_scaler 2 15
+                 &zip_scroll_scaler 6 15
                  &scroll_runtime_input_processor>;
-            // scaler 2/15: moNa2 で実機調整した 1/15 を cpi 差 (moNa2 800 /
-            // roBa 400) で2倍に換算した値。元は旧 CONFIG_PMW3610_SCROLL_TICK=16
-            // をそのまま写した 1/16 だったが、下の runtime 側 1/60 と掛かって
-            // 実効 1/960 になり「何をしても鈍い」状態だった。
+            // scaler 6/15 (=2/5): roBa の実機で決めた値。
+            // 経緯: 旧 CONFIG_PMW3610_SCROLL_TICK=16 をそのまま写した 1/16 は、
+            // 下の runtime 側 1/60 と掛かって実効 1/960 になり「何をしても鈍い」
+            // 状態だった。runtime を 1/1 に直したうえで moNa2 の実機調整値 1/15 を
+            // cpi 差 (moNa2 800 / roBa 400) で換算した 2/15 にしたが、roBa では
+            // まだ移動量が足りず、実機確認でさらに3倍にした。
+            // panner (6/5) のちょうど 1/3 で、「パンはスクロールの3倍」という
+            // 元の設計比にも合っている。
             // X反転は旧 CONFIG_PMW3610_INVERT_SCROLL_X=y に対応。
             //
             // 順序が重要: &inertial_scroll は scaler の「前」に置くこと。

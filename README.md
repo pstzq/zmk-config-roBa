@@ -72,7 +72,7 @@ compatible は衝突して使えない。
 | `automouse-layer = <4>` | `&zip_temp_layer 7 500` |
 | `scroll-layers = <5>` | `scroller { layers = <4 5 6>; }` |
 | `CONFIG_PMW3610_CPI` | devicetree の `cpi` プロパティ |
-| `CONFIG_PMW3610_SCROLL_TICK` | `&zip_scroll_scaler 2 15` |
+| `CONFIG_PMW3610_SCROLL_TICK` | `&zip_scroll_scaler 6 15` |
 | `CONFIG_PMW3610_INVERT_SCROLL_X` | `&zip_scroll_transform INPUT_TRANSFORM_X_INVERT` |
 | `CONFIG_PMW3610_ORIENTATION_180` | 相当物なし → `_INVERT_X` / `_INVERT_Y` の組合せ |
 

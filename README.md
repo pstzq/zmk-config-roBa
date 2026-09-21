@@ -1,7 +1,7 @@
 # zmk-config-roBa
 
 [roBa](https://github.com/kumamuk-git/zmk-config-roBa) (kumamuk-git 氏) の
-個人設定。ZMK v0.4 世代 (Zephyr 4.1) + [DYA Studio](https://studio.dya.cormoran.works)
+個人設定､ZMK v0.4 世代 (Zephyr 4.1) + [DYA Studio](https://studio.dya.cormoran.works)
 対応に移行し、キーマップは同じ owner の
 [moNa2](https://github.com/pstzq/zmk-config-moNa2-v2) の設計を移植してある。
 

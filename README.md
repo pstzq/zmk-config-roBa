@@ -72,11 +72,17 @@ compatible は衝突して使えない。
 | `automouse-layer = <4>` | `&zip_temp_layer 7 500` |
 | `scroll-layers = <5>` | `scroller { layers = <4 5 6>; }` |
 | `CONFIG_PMW3610_CPI` | devicetree の `cpi` プロパティ |
-| `CONFIG_PMW3610_SCROLL_TICK` | `&zip_scroll_scaler 1 16` |
+| `CONFIG_PMW3610_SCROLL_TICK` | `&zip_scroll_scaler 2 15` |
 | `CONFIG_PMW3610_INVERT_SCROLL_X` | `&zip_scroll_transform INPUT_TRANSFORM_X_INVERT` |
 | `CONFIG_PMW3610_ORIENTATION_180` | 相当物なし → `_INVERT_X` / `_INVERT_Y` の組合せ |
 
 慣性スクロールもドライバ機能ではなく入力プロセッサ (`&inertial_scroll`) で足している。
+スクロール速度は `zip_scroll_scaler` (dts側の固定減速) と
+`scroll_runtime_input_processor` (Studio から触れる可変倍率) の積で決まる。
+**後者はモジュール既定が 1/60** なので、`roBa_R.overlay` で 1/1 に上書きして
+「Studio の表示倍率 = 実効倍率」に揃えてある。この上書きを落とすと実効が
+1/960 になり、何をしても鈍い状態になる。
+
 **`&inertial_scroll` は `zip_scroll_scaler` の「前」に置くこと** —
 scaler には端数を蓄積する仕組みが無いため、後ろに置くと切り捨てで 0 になった値に
 慣性をかけることになり「ちょびちょび・カクカク」になる。

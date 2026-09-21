@@ -37,7 +37,11 @@
 #include <dt-bindings/zmk/outputs.h>
 #include <dt-bindings/zmk/pointing.h>
 
-#define ZMK_POINTING_DEFAULT_SCRL_VAL 30
+/* NOTE: ZMK_POINTING_DEFAULT_SCRL_VAL (SCRL_UP/SCRL_DOWN の既定値) は
+ * ここで define しても効かない。pointing.h が #ifndef で既定10を確定させるのは
+ * behaviors.dtsi の include 時点で、この行はそれより後ろにあるため。
+ * 現在 SCRL_* は使っておらず、ホイールは下の scroll_up_down が MOVE_Y() で
+ * 速度を明示している (moNa2 側にも同じ無効な define が残っている)。 */
 
 /* mod-tap 誤爆対策 (&mt / mt_bspc):
  * 直前のキー入力からこの時間(ms)以内は hold(修飾キー)が発動せず tap 扱いになる。
@@ -75,6 +79,15 @@
 &lt {
     quick-tap-ms = <200>;
     flavor = "balanced";
+};
+
+// ホイール回転のスクロール量を左手エンコーダ向けに細かく刻む。
+// &msc は tick ごとに「速度 x trigger-period-ms / 1000」行ずつ動かす実装で、
+// 既定の 16ms だと1ノッチ(tap-ms=32)の間に2tickしか回らず、1tick分の
+// 取りこぼしがそのまま2倍の量のばらつきになる。8ms にして4tickに分けると
+// ノッチごとの量が安定する。&msc はこのホイール以外では使っていない。
+&msc {
+    trigger-period-ms = <8>;
 };
 
 / {
@@ -266,12 +279,28 @@
         // 編集対象に出さないのでコンパイル時固定になる)。
 
         // moNa2 と同じ既定: ベース層ではホイール=スクロール
+        //
+        // 量とタイミングの決め方 (実機で「反応が悪い/入りっぱなし」に嵌った):
+        //   &msc の実体は zmk,behavior-input-two-axis で、押している間
+        //   「速度」でスクロールし続ける behavior。1tick あたりの移動量は
+        //   速度 x trigger-period-ms / 1000 で、端数は離し際に破棄される。
+        //   素の &msc SCRL_DOWN は速度10・tick16ms なので 0.16行/tick、
+        //   tap-ms=100 でも合計 0.96行 -> 切り捨てで 0行 = ほぼ動かない。
+        //   そこを速度を上げて補うと、今度は press/release が ZMK の
+        //   behavior queue に tap-ms 分ずつ積まれて溢れ、release だけが
+        //   落ちて速度が0に戻らず「スクロールが止まらない」になる
+        //   (&msc は press で速度を加算・release で減算する実装のため)。
+        //   -> tick を 8ms に細かくし、速度を明示して1ノッチ=約3行に固定、
+        //      tap-ms は queue を溢れさせない短さにする。
+        //   量を変えたいときは下の 100 を増減する (100 で約3行/ノッチ)。
         scroll_up_down: scroll_up_down {
             compatible = "zmk,behavior-runtime-sensor-rotate";
             #sensor-binding-cells = <0>;
-            cw-binding = <&msc SCRL_DOWN>;
-            ccw-binding = <&msc SCRL_UP>;
-            tap-ms = <100>;
+            cw-binding = <&msc MOVE_Y(-100)>;   // 手前に回す = 下スクロール
+            ccw-binding = <&msc MOVE_Y(100)>;   // 奥に回す   = 上スクロール
+            // 32ms = 8ms tick x 約4回。1ノッチ 0.8行 x 4 = 約3行。
+            // ここを伸ばすと queue 占有が延びて「入りっぱなし」が再発する
+            tap-ms = <32>;
         };
 
         // NAV / BLE 層では音量
@@ -280,7 +309,9 @@
             #sensor-binding-cells = <0>;
             cw-binding = <&kp C_VOL_DN>;
             ccw-binding = <&kp C_VOL_UP>;
-            tap-ms = <100>;
+            // &kp は押下/離上の一往復で済むので短くてよい (ZMK 既定は 5)。
+            // 長いと behavior queue を占有して速く回した時に詰まる
+            tap-ms = <10>;
         };
 
         // 本家 roBa の割当。今はどの層にも割り当てていないが、
@@ -291,7 +322,7 @@
             #sensor-binding-cells = <0>;
             cw-binding = <&kp PG_UP>;
             ccw-binding = <&kp PAGE_DOWN>;
-            tap-ms = <100>;
+            tap-ms = <10>;
         };
 
         // 本家 roBa の ARROW 層割当 (ブラウザのタブ切替)
@@ -300,7 +331,7 @@
             #sensor-binding-cells = <0>;
             cw-binding = <&kp LC(PAGE_UP)>;
             ccw-binding = <&kp LC(PAGE_DOWN)>;
-            tap-ms = <100>;
+            tap-ms = <10>;
         };
 
         // クリック層用 hold-tap: タップ=caps_word / 長押し=クリック層(CLICK)

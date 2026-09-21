@@ -61,9 +61,12 @@
                 <&zip_xy_to_scroll_mapper
                  &zip_scroll_transform INPUT_TRANSFORM_X_INVERT
                  &inertial_scroll
-                 &zip_scroll_scaler 1 16
+                 &zip_scroll_scaler 2 15
                  &scroll_runtime_input_processor>;
-            // scaler 1/16 は旧 CONFIG_PMW3610_SCROLL_TICK=16 に対応する値。
+            // scaler 2/15: moNa2 で実機調整した 1/15 を cpi 差 (moNa2 800 /
+            // roBa 400) で2倍に換算した値。元は旧 CONFIG_PMW3610_SCROLL_TICK=16
+            // をそのまま写した 1/16 だったが、下の runtime 側 1/60 と掛かって
+            // 実効 1/960 になり「何をしても鈍い」状態だった。
             // X反転は旧 CONFIG_PMW3610_INVERT_SCROLL_X=y に対応。
             //
             // 順序が重要: &inertial_scroll は scaler の「前」に置くこと。
@@ -75,13 +78,14 @@
         };
 
         // P長押し(GESTURE_PAN=9): 2D自由スクロール(パン)。
-        // ざっと移動する用途なので scroller(1/16) の約3倍にしてある。
+        // ざっと移動する用途なので scroller(2/15)の約4.5倍。
+        // moNa2 の 3/5 を cpi 差 (800 -> 400) で2倍に換算した値。
         panner {
             layers = <9>;
             input-processors =
                 <&zip_xy_to_scroll_mapper
                  &zip_scroll_transform INPUT_TRANSFORM_X_INVERT
-                 &zip_scroll_scaler 3 16
+                 &zip_scroll_scaler 6 5
                  &scroll_runtime_input_processor>;
         };
 
@@ -110,6 +114,21 @@
             >;
         };
     };
+};
+
+// スクロール用 runtime input processor の初期倍率を 1/1 にする。
+// モジュール既定は 1/60 で、そのままだと上の zip_scroll_scaler と掛かって
+// 実効が scroller 1/960 / panner 1/320 になり「何をしても鈍い」状態になる
+// (abe4aac で一度入れたが、キーマップ移植 d840ee1 で取りこぼしていた)。
+// 固定減速は listener 側の zip_scroll_scaler に一本化し、ここは
+// 「DYA Studio の表示倍率 = 実効倍率」に揃える。
+//
+// 注意: これは "Initial" 値。一度 Studio で保存すると以後はフラッシュ側が
+// 優先されるため、焼き直してもスライダーは前の値のまま。効かせるには
+// Studio でスケーリングを 1.00x に戻すか settings_reset をかけること。
+&scroll_runtime_input_processor {
+    scale-multiplier = <1>;
+    scale-divisor = <1>;
 };
 
 // オートマウスレイヤー(AML)の暴発対策。moNa2 の値をキー位置シフト規則

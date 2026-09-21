@@ -266,11 +266,22 @@ COM が2つ（例: `roBa（COM11）` と `roBa（COM15）`）現れる。**ロ�
 
 ---
 
-### 診断用ビルド
+### 診断用ビルド（削除済み）
 
-`build.yaml` に `roBa_R_logging` を用意してある。`roBa_R` と同じ構成に
-`zmk-usb-logging` スニペットを足したもので、ログ用の CDC ACM が別に生える。
-「何が起きているか分からない」ときだけ使うこと（常用しない）。
+切り分け用に `build.yaml` へ `roBa_R_logging`（`roBa_R` に `zmk-usb-logging`
+スニペットを足し、ログ用の CDC ACM が別に生えるビルド）を一時的に置いていたが、
+Studio の原因が判明したため削除した。
 
-再利用ワークフローの `snippet:` は `-S "..."` と1個しか渡せないため、2つ使うときは
-`cmake-args` で `-DSNIPPET="a;b"` と渡している。
+再度必要になったときのために手順だけ残す。再利用ワークフローの `snippet:` は
+`-S "..."` と1個しか渡せないので、スニペットを2つ使うには `cmake-args` で
+cmake の `SNIPPET` 変数へ直接渡す:
+
+```yaml
+  - board: xiao_ble/nrf52840/zmk
+    shield: roBa_R
+    cmake-args: '-DSNIPPET="studio-rpc-usb-uart;zmk-usb-logging" -DCONFIG_ZMK_LOG_LEVEL_DBG=y'
+    artifact-name: roBa_R_logging
+```
+
+焼くとシリアルポートが増える（ボード側コンソール + Studio RPC + ログ の3本）。
+上の「USB シリアルポートが2本見える」も併せて参照のこと。

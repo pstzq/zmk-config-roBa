@@ -135,7 +135,14 @@
     sensors: sensors {
         compatible = "zmk,keymap-sensors";
         sensors = <&left_encoder &right_encoder>;
-        triggers-per-rotation = <10>;
+        // トリガ境界 = 360 / この値 [度]。
+        // steps=48 なので 1パルス = 7.5度、CKW12 は 1ノッチ ≒ 4パルス = 30度。
+        // 本家から引き継いだ 10 だと境界が 36度 で 30度 と噛み合わず、
+        // 最初のノッチは 0 トリガ、端数の繰り越しで次が 1、という
+        // 0,1,1,1,0,... のムラになる (実機で「無反応の時がある」)。
+        // 12 にすると境界がちょうど 30度 = 1ノッチとなり、
+        // 1ノッチ = 正確に1トリガで端数が溜まらない。
+        triggers-per-rotation = <12>;
     };
 
     trackball_listener: trackball_listener {

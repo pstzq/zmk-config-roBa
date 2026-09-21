@@ -311,9 +311,13 @@
             #sensor-binding-cells = <0>;
             cw-binding = <&kp C_VOL_DN>;
             ccw-binding = <&kp C_VOL_UP>;
-            // &kp は押下/離上の一往復で済むので短くてよい (ZMK 既定は 5)。
-            // 長いと behavior queue を占有して速く回した時に詰まる
-            tap-ms = <10>;
+            // 音量キーは押しっぱなしで OS がオートリピートするため、
+            // release を取りこぼすと音量が下限/上限まで走る (実機で
+            // 「1操作で15段落ちる」)。10ms はメディアキーのタップとして
+            // 短すぎたので 40ms に。OS が離散的なタップとして確実に拾い、
+            // かつ behavior queue を詰まらせない長さ
+            // (1ノッチ1トリガなら毎秒15ノッチ回しても 600ms/秒 の占有)。
+            tap-ms = <40>;
         };
 
         // 本家 roBa の割当。今はどの層にも割り当てていないが、
@@ -324,7 +328,7 @@
             #sensor-binding-cells = <0>;
             cw-binding = <&kp PG_UP>;
             ccw-binding = <&kp PAGE_DOWN>;
-            tap-ms = <10>;
+            tap-ms = <40>;
         };
 
         // 本家 roBa の ARROW 層割当 (ブラウザのタブ切替)
@@ -333,7 +337,7 @@
             #sensor-binding-cells = <0>;
             cw-binding = <&kp LC(PAGE_UP)>;
             ccw-binding = <&kp LC(PAGE_DOWN)>;
-            tap-ms = <10>;
+            tap-ms = <40>;
         };
 
         // クリック層用 hold-tap: タップ=caps_word / 長押し=クリック層(CLICK)

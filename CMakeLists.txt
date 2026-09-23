@@ -1,0 +1,5 @@
+# roBa ユーザー設定リポジトリ独自のドライバ (zephyr/module.yml から読まれる)
+if(CONFIG_ROBA_DETENT_ENCODER)
+  zephyr_library_named(roba_detent_encoder)
+  zephyr_library_sources(drivers/sensor/detent_encoder/detent_encoder.c)
+endif()

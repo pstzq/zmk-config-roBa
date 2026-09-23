@@ -1,0 +1,20 @@
+description: |
+  ノッチ同期型ロータリーエンコーダ (drivers/sensor/detent_encoder)。
+  alps,ec11 の置き換え。1ノッチ = 1クアドラチャ周期 (4遷移) のエンコーダ用。
+  1ノッチごとに 360/detents-per-rotation 度を報告する。
+
+compatible: "roba,detent-encoder"
+
+properties:
+  a-gpios:
+    type: phandle-array
+    required: true
+  b-gpios:
+    type: phandle-array
+    required: true
+  detents-per-rotation:
+    type: int
+    default: 12
+    description: |
+      1ノッチあたりの報告角度を決める (360 / この値)。zmk,keymap-sensors の
+      triggers-per-rotation と同じ値にすると 1ノッチ = 1トリガになる。

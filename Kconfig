@@ -1,0 +1,8 @@
+# roBa ユーザー設定リポジトリ独自のドライバ
+
+config ROBA_DETENT_ENCODER
+    bool "roBa detent-synchronized rotary encoder"
+    default y
+    depends on DT_HAS_ROBA_DETENT_ENCODER_ENABLED
+    depends on GPIO
+    depends on SENSOR

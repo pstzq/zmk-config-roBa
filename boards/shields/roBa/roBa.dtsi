@@ -108,23 +108,18 @@
     };
 
     left_encoder: encoder_left {
-        compatible = "alps,ec11";
+        // 純正 alps,ec11 ではなく、このリポジトリの drivers/sensor/detent_encoder
+        // (ノッチ同期型) を使う。ec11 はパルスを1つ取りこぼすと端数がノッチ位置
+        // からずれたまま残り、以後ときどき空振りする (回し始め・逆回転時に多い)。
+        // こちらは A/B が静止位置へ戻るたびに1ノッチと数えて位相を合わせ直す。
+        //
+        // 1ノッチ = 360/detents-per-rotation 度をちょうど1回報告するので、
+        // 下の triggers-per-rotation と同じ値にしておけば 1ノッチ = 1トリガ。
+        // CKW12 は1ノッチ = 4遷移 (1クアドラチャ周期) 前提。
+        compatible = "roba,detent-encoder";
         a-gpios = <&xiao_d 5 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
         b-gpios = <&xiao_d 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-        // steps = 1回転あたりのパルス数。EC11 ドライバはここから
-        // val1 = pulses * 360 / steps (度) を出し、sensor-rotate 側が
-        // 360 / triggers-per-rotation (=36度) ごとに1トリガを発火する。
-        //
-        // 本家から引き継いだ 12 は実機と合っていなかった: CKW12 は
-        // クリック1つあたり約4パルス出るので、12 だと 1ノッチ = 120度 =
-        // 約3.3トリガになり、音量が1ノッチで3段も4段も飛ぶ
-        // (sensor-rotate はトリガ数だけ press/release を繰り返す実装)。
-        // 同じ CKW12 を積む moNa2 で実機確認した 48 に合わせる。
-        // これで 1ノッチ ≒ 36度 ≒ 1トリガになる。
-        //
-        // 音量が逆に粗くなる(数ノッチ回さないと1段動かない)場合は、
-        // 実機のパルス数が4ではなく2ということなので 24 にすること。
-        steps = <48>;
+        detents-per-rotation = <12>;
         status = "disabled";
     };
 
@@ -136,12 +131,8 @@
         compatible = "zmk,keymap-sensors";
         sensors = <&left_encoder &right_encoder>;
         // トリガ境界 = 360 / この値 [度]。
-        // steps=48 なので 1パルス = 7.5度、CKW12 は 1ノッチ ≒ 4パルス = 30度。
-        // 本家から引き継いだ 10 だと境界が 36度 で 30度 と噛み合わず、
-        // 最初のノッチは 0 トリガ、端数の繰り越しで次が 1、という
-        // 0,1,1,1,0,... のムラになる (実機で「無反応の時がある」)。
-        // 12 にすると境界がちょうど 30度 = 1ノッチとなり、
-        // 1ノッチ = 正確に1トリガで端数が溜まらない。
+        // left_encoder の detents-per-rotation と必ず同じ値にすること
+        // (1ノッチ = 30度 を報告し、30度ごとに1トリガ = 1ノッチ1トリガ)。
         triggers-per-rotation = <12>;
     };
 

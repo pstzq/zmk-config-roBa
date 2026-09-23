@@ -53,10 +53,11 @@
         //   決めた 500ms を採用 (本家 roBa は 700ms)。
         input-processors = <&mouse_runtime_input_processor &zip_temp_layer 7 500>;
 
-        // NUM(4) / NAV_MAC(5) / NAV_WIN(6) でカーソル移動ではなくスクロールにする
-        //   (本家の scroll-layers = <5> に相当。moNa2 の設計に合わせて3層へ拡張)
+        // NUM(4) でカーソル移動ではなくスクロールにする
+        //   (本家の scroll-layers = <5> に相当。moNa2 の設計に合わせて拡張)
+        //   NAV_MAC(5) / NAV_WIN(6) は下の scroller_nav で別倍率にしている。
         scroller {
-            layers = <4 5 6>;
+            layers = <4>;
             input-processors =
                 <&zip_xy_to_scroll_mapper
                  &zip_scroll_transform INPUT_TRANSFORM_X_INVERT
@@ -81,8 +82,23 @@
             // 速度は DYA Studio のトラックボールタブから実行時に調整できる。
         };
 
+        // LANG1/LANG2 長押し = NAV_MAC(5) / NAV_WIN(6) 中のスクロール。
+        // 実機で「もっと速く」となり scroller (6/15) の4倍 = 24/15 = 8/5 にした。
+        // panner (6/5) より速い点に注意。構成・順序の注意は scroller と同じ。
+        // &inertial_scroll / &scroll_runtime_input_processor は scroller と共有
+        // (同時に効くのはどちらか一方だけなので状態は混ざらない)。
+        scroller_nav {
+            layers = <5 6>;
+            input-processors =
+                <&zip_xy_to_scroll_mapper
+                 &zip_scroll_transform INPUT_TRANSFORM_X_INVERT
+                 &inertial_scroll
+                 &zip_scroll_scaler 8 5
+                 &scroll_runtime_input_processor>;
+        };
+
         // P長押し(GESTURE_PAN=9): 2D自由スクロール(パン)。
-        // ざっと移動する用途なので scroller(2/15)の約4.5倍。
+        // ざっと移動する用途なので scroller(6/15)の3倍。
         // moNa2 の 3/5 を cpi 差 (800 -> 400) で2倍に換算した値。
         panner {
             layers = <9>;
